@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.XPath;
 
 namespace ConsoleApplication12
@@ -27,31 +28,56 @@ namespace ConsoleApplication12
         static void Main(string[] args)
         {
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
-            String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {printf(\"Hello peter\");}", ABB.SrcML.Language.C);
-            String my_change = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {printf(\"Hello world\");}", ABB.SrcML.Language.C);
+           
+            String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i;\n printf(\"Hello peter crow %d\",i);}", ABB.SrcML.Language.C);
+            String my_change = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() { int i;\n printf(\"Hello woooo %d\",i);}", ABB.SrcML.Language.C);
 
-            // Create the XmlDocument.
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(my_source);
+           
+            XDocument document = XDocument.Parse(my_source);
+            
+           
+            //System.Console.ReadLine();
 
-            // Save the document to a file. White space is 
-            // preserved (no white space).
-            //doc.PreserveWhitespace = true;
-            doc.Save("libxmldiff_new\\source_data1.xml");   // ulozi obsah vygenerovaneho xml pred zmenou
-            doc.LoadXml(my_change);
-            doc.Save("libxmldiff_new\\source_data2.xml");   // ulozi obsah vygenerovaneho xml po zmene
+            foreach (var el in document.Descendants())
+            {
+                if(el.Name != "unit")
+                {
+                    el.RemoveAttributes();
+                }
+            }
 
+            document.Save("source_data1.xml");
+
+
+
+            document = XDocument.Parse(my_change);
+
+
+            //System.Console.ReadLine();
+
+            foreach (var el in document.Descendants())
+            {
+                if (el.Name != "unit")
+                {
+                    el.RemoveAttributes();
+                }
+            }
+
+            document.Save("source_data2.xml");
+
+            System.Console.WriteLine(document);
+            //System.Console.ReadLine();
+
+            
             string filename = "libxmldiff_new\\xmldiff";
             string parameteres = " diff source_data1.xml source_data2.xml difference.xml";
-            Process.Start(filename,parameteres);
-
+            Process.Start(filename, parameteres);
+            
+            
+            XmlDocument doc = new XmlDocument();
             doc.Load("difference.xml");             // nacitanie vytvoreneho xml suboru
             string xmlcontents = doc.InnerXml;
 
-            System.Console.WriteLine(xmlcontents + "\n"); 
-            System.Console.WriteLine(my_source + "\n");
-            System.Console.WriteLine(my_change + "\n");
-            
             
             //XmlDocument xml = new XmlDocument();
             //xml = doc;
@@ -60,9 +86,10 @@ namespace ConsoleApplication12
             //nsmgr.AddNamespace("xd", "xmlns:xd");
 
             XmlReader reader = XmlReader.Create(new StringReader(xmlcontents));
-            XPathDocument document = new XPathDocument(reader);
-            XPathNavigator navigator = document.CreateNavigator();
+            XPathDocument document_xpath = new XPathDocument(reader);
+            XPathNavigator navigator = document_xpath.CreateNavigator();
             XmlNamespaceManager manager = new XmlNamespaceManager(navigator.NameTable);
+            manager.AddNamespace("base", "http://www.sdml.info/srcML/src");
             manager.AddNamespace("cpp", "http://www.sdml.info/srcML/cpp");
             manager.AddNamespace("lit", "http://www.sdml.info/srcML/literal");
             manager.AddNamespace("op", "http://www.sdml.info/srcML/operator");
@@ -70,7 +97,7 @@ namespace ConsoleApplication12
             manager.AddNamespace("pos", "http://www.sdml.info/srcML/position");
             manager.AddNamespace("diff", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
 
-            XPathNodeIterator nodes = navigator.Select("name",manager);
+            XPathNodeIterator nodes = navigator.Select("//base:call/base:name='printf'",manager);
             
             if (nodes.MoveNext())
             {
