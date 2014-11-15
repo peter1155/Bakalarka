@@ -14,31 +14,50 @@ namespace ConsoleApplication12
 {
     class Program
     {
-        /*public static void GenerateDiffGram(string originalSource, string changedSource,
-                                    XmlWriter diffGramWriter)
+        public static void createXMLDoc()
         {
-            XmlDiff xmldiff = new XmlDiff(XmlDiffOptions.IgnoreNamespaces | XmlDiffOptions.IgnorePrefixes);
-            XmlReader sourceReader = XmlReader.Create(new StringReader(originalSource));
-            XmlReader changedReader = XmlReader.Create(new StringReader(changedSource));
+            XmlDocument doc = new XmlDocument();
 
-            bool bIdentical = xmldiff.Compare(sourceReader, changedReader, diffGramWriter);
-            diffGramWriter.Close();
-        }*/
+            XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            XmlElement root = doc.DocumentElement;
+            doc.InsertBefore(xmlDeclaration, root);
+
+            XmlElement element1 = doc.CreateElement(string.Empty, "actions", string.Empty);
+            doc.AppendChild(element1);
+            doc.Save("RecordedActions.xml");
+        }
 
         static void Main(string[] args)
         {
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
-           
-            String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i;\n printf(\"Hello peter crow %d\",i);}", ABB.SrcML.Language.C);
-            String my_change = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() { int i;\n printf(\"Hello woooo %d\",i);}", ABB.SrcML.Language.C);
 
-           
-            XDocument document = XDocument.Parse(my_source);
-            
+            //String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i,j;\n printf(\"\");}", ABB.SrcML.Language.C);
+            //String my_change = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i,j;\n printf(\"dfs\");}", ABB.SrcML.Language.C);
+            my_runner.GenerateSrcMLFromFile("Source_code1.c", 
+                "source_data1.xml", ABB.SrcML.Language.C);
+            my_runner.GenerateSrcMLFromFile("Source_code2.c",
+                 "source_data2.xml", ABB.SrcML.Language.C);
+
+            XDocument document = XDocument.Load("source_data1.xml");
+            String source_str = document.ToString();
+            source_str = source_str.Replace("pos:line", "line");
+            source_str = source_str.Replace("pos:column", "column");
+            document = XDocument.Parse(source_str);
+            document.Save("source_data1.xml");
+
+            document = XDocument.Load("source_data2.xml");
+            String changed_str = document.ToString();
+            changed_str = changed_str.Replace("pos:line", "line");
+            changed_str = changed_str.Replace("pos:column", "column");
+            document = XDocument.Parse(changed_str);
+            document.Save("source_data2.xml");
+
+
+            //System.Console.WriteLine(source_str);
            
             //System.Console.ReadLine();
 
-            foreach (var el in document.Descendants())
+            /*foreach (var el in document.Descendants())
             {
                 if(el.Name != "unit")
                 {
@@ -48,10 +67,7 @@ namespace ConsoleApplication12
 
             document.Save("source_data1.xml");
 
-
-
-            document = XDocument.Parse(my_change);
-
+            document = XDocument.Load("source_data2.xml");
 
             //System.Console.ReadLine();
 
@@ -65,26 +81,40 @@ namespace ConsoleApplication12
 
             document.Save("source_data2.xml");
 
-            System.Console.WriteLine(document);
+            System.Console.WriteLine(document);*/
             //System.Console.ReadLine();
 
             
+
             string filename = "libxmldiff_new\\xmldiff";
-            string parameteres = " diff source_data1.xml source_data2.xml difference.xml";
-            Process.Start(filename, parameteres);
-            
-            
+            // Ako separator pouzivam tildu ta by sa v kode nemala vyskytnut
+            string parameteres = " diff --ignore @line,@column --sep ~ source_data1.xml source_data2.xml difference.xml";
+            if (File.Exists("difference.xml"))
+            {
+                File.Delete("difference.xml");
+            }
+
+            Process p = new Process();
+            p.StartInfo.FileName = filename;
+            p.StartInfo.Arguments = parameteres;
+            p.Start();
+            p.WaitForExit();
+
             XmlDocument doc = new XmlDocument();
+            //if (p.ExitCode == 0)   // Vracia exit code 4 nejaka divocina
             doc.Load("difference.xml");             // nacitanie vytvoreneho xml suboru
+            /*else
+            {
+                System.Console.WriteLine("Nepodarilo sa vygenerovat diff subor");
+                System.Console.ReadLine();
+                return;
+            }*/
+
+            createXMLDoc();
             string xmlcontents = doc.InnerXml;
-
+            xmlcontents = xmlcontents.Replace("line", "pos:line");
+            xmlcontents = xmlcontents.Replace("column", "pos:column");
             
-            //XmlDocument xml = new XmlDocument();
-            //xml = doc;
-
-            //XmlNamespaceManager nsmgr = new XmlNamespaceManager(xml.NameTable);
-            //nsmgr.AddNamespace("xd", "xmlns:xd");
-
             XmlReader reader = XmlReader.Create(new StringReader(xmlcontents));
             XPathDocument document_xpath = new XPathDocument(reader);
             XPathNavigator navigator = document_xpath.CreateNavigator();
@@ -96,29 +126,19 @@ namespace ConsoleApplication12
             manager.AddNamespace("type", "http://www.sdml.info/srcML/modifier");
             manager.AddNamespace("pos", "http://www.sdml.info/srcML/position");
             manager.AddNamespace("diff", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
+            // Vytvaram manager a navigator na parsovanie xml pomocou xpath
 
-            XPathNodeIterator nodes = navigator.Select("//base:call/base:name='printf'",manager);
+            OutputChangeActivity outputActivity = new OutputChangeActivity();
+            //outputActivity.findDifferenceInOutput(manager, navigator);
+
+            InputChangeActivity inputActivity = new InputChangeActivity();
+            //inputActivity.findDifferenceInOutput(manager, navigator);
+
+            SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
+            specialCaseActivity.findDifferenceInOutput(manager, navigator);
+
+
             
-            if (nodes.MoveNext())
-            {
-                // now nodes.Current points to the first selected node
-                XPathNavigator nodesNavigator = nodes.Current;
-
-                //select all the descendants of the current price node
-               
-                XPathNodeIterator nodesText = 
-                   nodesNavigator.SelectDescendants(XPathNodeType.Element, false);
-                
-                while (nodesText.MoveNext())
-                {
-                    if(nodesText.Current.Value.Contains("for"))
-                    {
-                        Console.WriteLine("Editoval for");
-                    }
-                    Console.WriteLine("\n" + nodesText.Current.Value);
-                }
-            }
-            System.Console.ReadLine();
         }
     }
 }

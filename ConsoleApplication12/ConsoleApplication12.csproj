@@ -54,8 +54,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InputChangeActivity.cs" />
+    <Compile Include="OutputChangeActivity.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpecialCaseActivity.cs" />
+    <Compile Include="XPathNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
