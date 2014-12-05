@@ -14,6 +14,17 @@ namespace ConsoleApplication12
 {
     class Program
     {
+        public static void GenerateDiffGram(string originalFile, string finalFile,
+                            XmlWriter diffGramWriter)
+        {
+            XmlDiff xmldiff = new XmlDiff(XmlDiffOptions.IgnoreChildOrder |
+                                         XmlDiffOptions.IgnoreNamespaces |
+                                         XmlDiffOptions.IgnorePrefixes
+                                         );
+            bool bIdentical = xmldiff.Compare(originalFile, finalFile, false, diffGramWriter);
+            diffGramWriter.Close();
+        }
+
         public static void createXMLDoc()
         {
             XmlDocument doc = new XmlDocument();
@@ -30,20 +41,21 @@ namespace ConsoleApplication12
         static void Main(string[] args)
         {
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
-
+            
             //String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i,j;\n printf(\"\");}", ABB.SrcML.Language.C);
             //String my_change = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i,j;\n printf(\"dfs\");}", ABB.SrcML.Language.C);
             my_runner.GenerateSrcMLFromFile("Source_code1.c", 
                 "source_data1.xml", ABB.SrcML.Language.C);
             my_runner.GenerateSrcMLFromFile("Source_code2.c",
                  "source_data2.xml", ABB.SrcML.Language.C);
-
+            
             XDocument document = XDocument.Load("source_data1.xml");
             String source_str = document.ToString();
             source_str = source_str.Replace("pos:line", "line");
             source_str = source_str.Replace("pos:column", "column");
             document = XDocument.Parse(source_str);
             document.Save("source_data1.xml");
+
 
             document = XDocument.Load("source_data2.xml");
             String changed_str = document.ToString();
@@ -52,6 +64,13 @@ namespace ConsoleApplication12
             document = XDocument.Parse(changed_str);
             document.Save("source_data2.xml");
 
+            String  diffString = "tempDiff.xml";
+            XmlWriter writer = XmlWriter.Create(diffString);
+
+            GenerateDiffGram("source_data1.xml", "source_data2.xml", writer);
+            //System.Console.WriteLine(diffString.ToString());
+            
+            System.Console.ReadLine();
 
             //System.Console.WriteLine(source_str);
            
@@ -84,15 +103,14 @@ namespace ConsoleApplication12
             System.Console.WriteLine(document);*/
             //System.Console.ReadLine();
 
-            
 
             string filename = "libxmldiff_new\\xmldiff";
             // Ako separator pouzivam tildu ta by sa v kode nemala vyskytnut
             string parameteres = " diff --ignore @line,@column --sep ~ source_data1.xml source_data2.xml difference.xml";
-            if (File.Exists("difference.xml"))
+            /*if (File.Exists("difference.xml"))
             {
                 File.Delete("difference.xml");
-            }
+            }*/
 
             Process p = new Process();
             p.StartInfo.FileName = filename;
@@ -129,13 +147,13 @@ namespace ConsoleApplication12
             // Vytvaram manager a navigator na parsovanie xml pomocou xpath
 
             OutputChangeActivity outputActivity = new OutputChangeActivity();
-            //outputActivity.findDifferenceInOutput(manager, navigator);
+            outputActivity.findDifferenceInOutput(manager, navigator);
 
             InputChangeActivity inputActivity = new InputChangeActivity();
             //inputActivity.findDifferenceInOutput(manager, navigator);
 
             SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
-            specialCaseActivity.findDifferenceInOutput(manager, navigator);
+            //specialCaseActivity.findDifferenceInOutput(manager, navigator);
 
 
             

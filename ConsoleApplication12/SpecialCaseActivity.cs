@@ -103,7 +103,6 @@ namespace ConsoleApplication12
                 " or base:break[@diff:status] or base:continue[@diff:status]] | //base:if[@diff:status]/base:then[base:return[@diff:status] or base:continue[@diff:status] or " +
                 " base:break[@diff:status]]", manager);
             
-
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
