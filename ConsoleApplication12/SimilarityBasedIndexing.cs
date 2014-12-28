@@ -7,17 +7,31 @@ using System.Xml;
 
 namespace ConsoleApplication12
 {
-    class SimilarityBasedIndexing
+    class SimilarityBaseIndexing
     {
+        // Sluzi na indexovanie podobnych lementov
         static Int64 id = 0;
-        static int depth = 0;
 
-        int max(int a, int b)
+        // Aktualna hlbka  vnorenia v ramci rekurzie
+        private int depth = 0;
+
+        // Sluzi na priradenie pomocnych indexov vsetkym elementom
+        private Int64 tempIndex = 0;
+
+        // Udavaju velkost resultTable
+        private Int64 tempId1 = 0;
+        private Int64 tempId2 = 0;
+        // Odpametavam si vysledky aby som zabranil opakovanym vypoctom
+        private float[,] resultTable;
+
+        // Vracia maximum dvoch cisel
+        private int max(int a, int b)
         {
             return (a > b) ? a : b;
         }
 
-        int LCS(string s1, string s2)
+        // Longest common subsequence
+        private int LCS(string s1, string s2)
         {
             if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
             {
@@ -45,14 +59,16 @@ namespace ConsoleApplication12
             return table[s1.Length, s2.Length];
         }
 
-        float computeStringSimilarity(string str1, string str2)
+        // Vracia textovu podobnost dvoch stringov
+        private float computeStringSimilarity(string str1, string str2)
         {
             int lcs = LCS(str1, str2);
             float avarage = (str1.Length + str2.Length) / 2;
             return lcs / avarage;
         }
 
-        float greedyMatching(float[,] matrix, XmlNodeList list1, XmlNodeList list2,
+        // Sluzi na greedy parovanie dcerskych elementov all to all
+        private float greedyMatching(float[,] matrix, XmlNodeList list1, XmlNodeList list2,
             XmlDocument doc1, XmlDocument doc2)
         {
             float max = matrix[0, 0];
@@ -86,7 +102,24 @@ namespace ConsoleApplication12
             return sum / avarage;
         }
 
-        float subelementSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
+        // Sluzi na pridanie pomocnych indexov
+        private void tempIndedxing(XmlDocument doc, XmlNodeList nodes)
+        {
+            foreach (XmlNode node in nodes)
+            {
+                if (node.NodeType == XmlNodeType.Element)
+                {
+                    XmlAttribute tempId = doc.CreateAttribute("temp_id");
+                    tempId.Value = tempIndex.ToString();
+                    node.Attributes.Append(tempId);
+                    tempIndex++;
+                }
+                tempIndedxing(doc, node.ChildNodes);
+            }
+        }
+
+        // Vracia podobnost subelementov daneho elementu
+        private float subelementSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
         {
             XmlNodeList list1 = root1.ChildNodes;
             XmlNodeList list2 = root2.ChildNodes;
@@ -108,17 +141,57 @@ namespace ConsoleApplication12
             return greedyMatching(matrix, list1, list2, doc1, doc2);
         }
 
-        public float computeSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
+        // Vracia podobnost dvoch xml elementov
+        private float computeSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
         {
-            float textSimilarity = computeStringSimilarity(root1.InnerText, root2.InnerText);
-            float nameSimilarity = computeStringSimilarity(root1.Name, root2.Name);
-            float childSimilarity = subelementSimilarity(doc1, doc2, root1, root2);
-            //XmlNodeList list1 = root1.ChildNodes;
+            XmlNode tempIdAtrib;
+            XmlNode tempIdAtrib2;
+            int tempIdValue1 = -1;
+            int tempIdValue2 = -1;
+            float similarity = -1;
 
-            float similarity = (2*textSimilarity + nameSimilarity + childSimilarity) / 4;
+            if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
+            {
+                tempIdAtrib = root1.Attributes.GetNamedItem("temp_id");
+                tempIdAtrib2 = root2.Attributes.GetNamedItem("temp_id");
+                tempIdValue1 = Convert.ToInt32(tempIdAtrib.Value);
+                tempIdValue2 = Convert.ToInt32(tempIdAtrib2.Value);
+                if (resultTable[tempIdValue1, tempIdValue2] > 0 && depth > 0)
+                    similarity = resultTable[tempIdValue1, tempIdValue2];
+                else
+                {
+                    float textSimilarity = computeStringSimilarity(root1.InnerText, root2.InnerText);
+                    float nameSimilarity = computeStringSimilarity(root1.Name, root2.Name);
+                    float childSimilarity = subelementSimilarity(doc1, doc2, root1, root2);
+                    //XmlNodeList list1 = root1.ChildNodes;
+                    similarity = (textSimilarity + nameSimilarity + childSimilarity) / 3;
+
+                    // Ulozim hodnotu podobnosti do resultTable
+                    if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
+                    {
+                        resultTable[tempIdValue1, tempIdValue2] = similarity;
+                    }
+                }
+
+            }
+            else
+            {
+                float textSimilarity = computeStringSimilarity(root1.InnerText, root2.InnerText);
+                float nameSimilarity = computeStringSimilarity(root1.Name, root2.Name);
+                float childSimilarity = subelementSimilarity(doc1, doc2, root1, root2);
+                //XmlNodeList list1 = root1.ChildNodes;
+                similarity = (textSimilarity + nameSimilarity + childSimilarity) / 3;
+
+                // Ulozim hodnotu podobnosti do resultTable
+                //if (root1.Attributes != null && root2.Attributes != null)
+                if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
+                {
+                    resultTable[tempIdValue1, tempIdValue2] = similarity;
+                }
+            }
 
             if (similarity > 0.7 && root1.Attributes != null && root2.Attributes != null
-                && root1.ParentNode.Name == root2.ParentNode.Name && depth == 1 )
+                && root1.ParentNode.Name == root2.ParentNode.Name && depth == 1)
             {
                 float similar1 = -1;
                 float similar2 = -1;
@@ -201,7 +274,53 @@ namespace ConsoleApplication12
                 }
             }
 
-            return (2*textSimilarity + nameSimilarity + childSimilarity) / 4;
+            return similarity;
+        }
+
+        // Recurzivne vypocitava podobnost vsetkych xml elementov a sucasne ich indexuje
+        private void recursiveSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNodeList list1, XmlNodeList list2)
+        {
+            foreach (XmlNode listNode in list1)
+                foreach (XmlNode listNode2 in list2)
+                {
+                    if (listNode.NodeType == XmlNodeType.Element && listNode2.NodeType == XmlNodeType.Element)
+                    {
+                        var idAtrib = listNode.Attributes.GetNamedItem("id");
+                        var idAtrib2 = listNode2.Attributes.GetNamedItem("id");
+                        if (idAtrib != null && idAtrib2 != null && String.Compare(idAtrib.Value, idAtrib2.Value) == 0)
+                        {
+                            computeSimilarity(doc1, doc2, listNode, listNode2);
+                            if (listNode.HasChildNodes && listNode2.HasChildNodes)
+                                recursiveSimilarity(doc1, doc2, listNode.ChildNodes, listNode2.ChildNodes);
+                        }
+                    }
+                }
+        }
+
+        public void xmlIndexing(String fileName1, String fileName2)
+        {
+            XmlDocument doc1 = new XmlDocument();
+            XmlDocument doc2 = new XmlDocument();
+            doc1.Load(fileName1);
+            doc2.Load(fileName2);
+            XmlNode node1 = doc1.DocumentElement;
+            XmlNode node2 = doc2.DocumentElement;
+
+            tempIndedxing(doc1, doc1.ChildNodes);
+            tempId1 = tempIndex;
+            tempIndex = 0;
+            tempIndedxing(doc2, doc2.ChildNodes);
+            tempId2 = tempIndex;
+            resultTable = new float[tempId1, tempId2];
+
+            for (int i = 0; i < tempId1; i++)
+                for (int j = 0; j < tempId2; j++)
+                    resultTable[i, j] = -1;
+
+            computeSimilarity(doc1, doc2, node1, node2);
+            recursiveSimilarity(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
+            doc1.Save("source_data1.xml");
+            doc2.Save("source_data2.xml");
         }
     }
 }
