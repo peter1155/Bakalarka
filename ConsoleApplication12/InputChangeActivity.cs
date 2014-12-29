@@ -407,6 +407,174 @@ namespace ConsoleApplication12
             return temp;
         }
 
+        private List<String> manualParse(XPathNavigator navigator)
+        {
+            String parameters_before = null;
+            String parameters_after = null;
+            String[] beforeAfterValues = null;
+            char[] delimiters = { '~' };
+            // Select arguments from argument list
+            XPathNodeIterator call_children = navigator.SelectChildren(XPathNodeType.Element);
+            XPathNavigator call_child = null;
+
+            while (call_children.MoveNext())
+            {
+                if (String.Compare(call_children.Current.Name, "argument_list") == 0)
+                {
+                    call_child = call_children.Current;
+                    break;
+                }
+            }
+
+            XPathNodeIterator arguments = call_child.SelectChildren(XPathNodeType.Element);
+
+            // Prechadzame vsetkymi argumentmi funkcie 
+            int in_after_counter = 0;
+            int out_after_counter = 0;
+
+            int in_before_counter = 0;
+            int out_before_counter = 0;
+
+
+            while (arguments.MoveNext())
+            {
+                XPathNodeIterator expresionIterator = arguments.Current.SelectChildren(XPathNodeType.Element);
+                expresionIterator.MoveNext();
+                XPathNodeIterator parameterIterator = expresionIterator.Current.SelectChildren(XPathNodeType.Element);
+
+                in_after_counter = 0;
+                in_before_counter = 0;
+
+                while (parameterIterator.MoveNext())
+                {
+                    XPathNavigator parameter = parameterIterator.Current;
+                    String temp = parameter.GetAttribute("status", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
+                    String tempValue = parameter.Value;
+
+                    if (String.Compare(temp, "modified") == 0)
+                    {
+                        if (out_after_counter != 0 && in_after_counter == 0)
+                            parameters_after += "~~";
+                        if (out_before_counter != 0 && in_before_counter == 0)
+                            parameters_before += "~~";
+
+                        out_after_counter++;
+                        in_after_counter++;
+
+                        out_before_counter++;
+                        in_before_counter++;
+
+                        beforeAfterValues = tempValue.Split(delimiters);
+                        parameters_before += beforeAfterValues[0];
+                        parameters_after += beforeAfterValues[1];
+                    }
+                    else if (String.Compare(temp, "added") == 0)
+                    {
+                        if (out_after_counter != 0 && in_after_counter == 0)
+                            parameters_after += "~~";
+                        out_after_counter++;
+                        in_after_counter++;
+                        parameters_after += tempValue;
+                    }
+                    else if (String.Compare(temp, "removed") == 0)
+                    {
+                        if (out_before_counter != 0 && in_before_counter == 0)
+                            parameters_before += "~~";
+                        out_before_counter++;
+                        in_before_counter++;
+                        parameters_before += tempValue;
+                    }
+                    else if (String.Compare(temp, "below") == 0)
+                    {
+
+                        // parmeterObject.type.Add("removed");
+                    }
+                    else
+                    {
+                        if (out_after_counter != 0 && in_after_counter == 0)
+                            parameters_after += "~~";
+                        if (out_before_counter != 0 && in_before_counter == 0)
+                            parameters_before += "~~";
+
+                        out_after_counter++;
+                        in_after_counter++;
+
+                        out_before_counter++;
+                        in_before_counter++;
+
+                        parameters_before += tempValue;
+                        parameters_after += tempValue;
+                    }
+                }
+
+            }
+
+            List<String> list = new List<String>();
+            list.Add(parameters_before);
+            list.Add(parameters_after);
+            return list;
+        }
+
+        /*private List<String> manualParse2(XPathNavigator node, String temp_id, String fileName, String fileName2)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fileName);
+
+          
+            XPathNavigator navigator = doc.CreateNavigator();
+
+            XmlNamespaceManager manager = new XmlNamespaceManager(navigator.NameTable);
+            manager.AddNamespace("base", "http://www.sdml.info/srcML/src");
+            manager.AddNamespace("cpp", "http://www.sdml.info/srcML/cpp");
+            manager.AddNamespace("lit", "http://www.sdml.info/srcML/literal");
+            manager.AddNamespace("op", "http://www.sdml.info/srcML/operator");
+            manager.AddNamespace("type", "http://www.sdml.info/srcML/modifier");
+            manager.AddNamespace("pos", "http://www.sdml.info/srcML/position");
+
+            String temp = "//base:call[@temp_id='" + temp_id + "']";
+            XPathNodeIterator nodes = navigator.Select(temp, manager);
+            nodes.MoveNext();
+            XPathNavigator nodeBefore = nodes.Current;
+          //  XmlDocument doc1 = new XmlDocument();
+          //  doc1.LoadXml(nodeBefore.OuterXml);
+
+            String id = "";
+            XPathNavigator tempNavigator = node.Clone();
+
+            while (String.Compare(id, "") == 0)
+            {
+                tempNavigator.MoveToParent();
+                id = tempNavigator.GetAttribute("id", "");
+            }
+
+            XmlDocument doc2 = new XmlDocument();
+            doc2.Load(fileName2);
+            //XmlNode xmlNode = findElement(id, doc2.DocumentElement.ChildNodes);
+            string xmlcontents2 = doc2.InnerXml;
+           
+           
+            var navigator2 = doc2.CreateNavigator();
+            String temp2 = "//*[@id= '"+id+"']";
+            nodes = navigator2.Select(temp2, manager);
+            nodes.MoveNext();
+            navigator2 = nodes.Current; 
+            nodes = navigator2.Select("//base:call[base:name='scanf']", manager);
+
+            var tempNodes = nodes.Clone();
+            double[] similarity = new double[tempNodes.Count];
+            SimilarityBaseIndexing indexing = new SimilarityBaseIndexing();
+            int counter = 0;
+
+            while (tempNodes.MoveNext())
+            {
+                XPathNavigator curr = tempNodes.Current;
+                similarity[counter] = indexing.computeSimilarity(doc, doc2,
+                    (XmlNode)curr.UnderlyingObject, (XmlNode)nodeBefore.UnderlyingObject);
+                counter++;
+            }
+            return null;
+        }*/
+
         public void writeActionScan(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
@@ -432,23 +600,49 @@ namespace ConsoleApplication12
 
             // Ziskam id funkcie scanf
             String id = tempNavigator2.GetAttribute("id", "");
+            String temp_id = tempNavigator2.GetAttribute("temp_id", "");
             String parametersBefore = findInSource(id,"source_data1.xml");
             String parametersAfter = findInSource(id,"source_data2.xml");
             String literalBefore;
             String literalAfter;
+            string[] beforeAfterValues = null;
 
-            string[] delimiters = { "~~" };
-            
-            // Ziskavame hodnotu vstupnych atr. pred zmenou
-            string[] beforeAfterValues = parametersBefore.Split(delimiters,StringSplitOptions.None); // Rozsekam zmenu na casti
-            literalBefore = beforeAfterValues[0];
-            parametersBefore = beforeAfterValues[1];
+            if (String.Compare(id, "") == 0)
+            {
+                var list = manualParse(tempNavigator2.Clone());
+                //manualParse2(tempNavigator2.Clone(),temp_id,"source_data2.xml", "source_data1.xml");
+                
+                parametersBefore = list.ElementAt(0);
+                parametersAfter = list.ElementAt(1);
 
-            // Ziskavame hodnotu vstupnych atr. po zmene
-            beforeAfterValues = parametersAfter.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
-            literalAfter = beforeAfterValues[0];
-            parametersAfter = beforeAfterValues[1];
+                string[] delimiters = { "~~" };
 
+                // Ziskavame hodnotu vstupnych atr. pred zmenou
+                beforeAfterValues = parametersBefore.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
+                literalBefore = beforeAfterValues[0];
+                parametersBefore.Replace("~~", ",");
+                parametersBefore = parametersBefore.Substring(literalBefore.Length + 1);
+
+                // Ziskavame hodnotu vstupnych atr. po zmene
+                beforeAfterValues = parametersAfter.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
+                literalAfter = beforeAfterValues[0];
+                parametersAfter.Replace("~~", ",");
+                parametersAfter = parametersAfter.Substring(literalAfter.Length + 1);
+            }
+            else
+            {
+                string[] delimiters = { "~~" };
+
+                // Ziskavame hodnotu vstupnych atr. pred zmenou
+                beforeAfterValues = parametersBefore.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
+                literalBefore = beforeAfterValues[0];
+                parametersBefore = beforeAfterValues[1];
+
+                // Ziskavame hodnotu vstupnych atr. po zmene
+                beforeAfterValues = parametersAfter.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
+                literalAfter = beforeAfterValues[0];
+                parametersAfter = beforeAfterValues[1];
+            }
             // Ziskam pristup k detom elementu call
             XPathNodeIterator callChildren =
                 tempNavigator2.SelectChildren(XPathNodeType.Element);
@@ -479,19 +673,36 @@ namespace ConsoleApplication12
             {
                 type = "parameter";
             }
-            
+
+            XElement functionElement = null;
+            String funcName = functionNameNav.Value;
+
+            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
+            if (funcName.Contains("~"))
+            {
+                char[] del = { '~' };
+                beforeAfterValues = funcName.Split(del);
+                functionElement = new XElement("function_name",
+                    new XElement("before", beforeAfterValues[0]),
+                    new XElement("after", beforeAfterValues[1]));
+            }
+            else
+            {
+                functionElement = new XElement("function_name", functionNameNav.Value);
+            }
+
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
             
             XElement my_element = new XElement("acion",
-                    new XElement("name", "InputChange"),
+                    new XElement("name", "input_change"),
                 //new XElement("diffType", diffType),
                     new XElement("type", type),
-                    new XElement("function", functionNameNav.Value),
-                    new XElement("LiteralBefore", literalBefore),
-                    new XElement("LiteralAfter", literalAfter),
-                    new XElement("ParametersBefore", parametersBefore),
-                    new XElement("ParametersAfter", parametersAfter),
+                    functionElement,
+                    new XElement("literal_before", literalBefore),
+                    new XElement("literal_after", literalAfter),
+                    new XElement("parameters_before", parametersBefore),
+                    new XElement("parameters_after", parametersAfter),
                     new XElement("line", line),
                     new XElement("column", column)
                     );

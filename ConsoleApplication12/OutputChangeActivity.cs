@@ -528,18 +528,36 @@ namespace ConsoleApplication12
                 type = "parameter";
             }
 
+            XElement functionElement = null;
+            String funcName = functionNameNav.Value;
+            
+            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
+            if(funcName.Contains("~"))
+            {
+                char[] del = { '~' };
+                beforeAfterValues = funcName.Split(del);
+                functionElement = new XElement("function_name", 
+                    new XElement("before",beforeAfterValues[0]),
+                    new XElement("after",beforeAfterValues[1]));
+            }
+            else
+            {
+                functionElement = new XElement("function_name",functionNameNav.Value);
+            }
+
+
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             XElement my_element = new XElement("acion",
-                    new XElement("name", "OutputChange"),
+                    new XElement("name", "output_change"),
                 //new XElement("diffType", diffType),
                     new XElement("type", type),
-                    new XElement("function", functionNameNav.Value),
-                    new XElement("LiteralBefore", literalBefore),
-                    new XElement("LiteralAfter", literalAfter),
-                    new XElement("ParametersBefore", parametersBefore),
-                    new XElement("ParametersAfter", parametersAfter),
+                    functionElement,
+                    new XElement("literal_before", literalBefore),
+                    new XElement("literal_after", literalAfter),
+                    new XElement("parameters_before", parametersBefore),
+                    new XElement("parameters_after", parametersAfter),
                     new XElement("line", line),
                     new XElement("column", column)
                     );

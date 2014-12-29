@@ -142,7 +142,7 @@ namespace ConsoleApplication12
         }
 
         // Vracia podobnost dvoch xml elementov
-        private float computeSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
+        public float computeSimilarity(XmlDocument doc1, XmlDocument doc2, XmlNode root1, XmlNode root2)
         {
             XmlNode tempIdAtrib;
             XmlNode tempIdAtrib2;

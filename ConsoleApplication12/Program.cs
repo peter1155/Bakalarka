@@ -155,12 +155,22 @@ namespace ConsoleApplication12
             manager.AddNamespace("diff", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
             // Vytvaram manager a navigator na parsovanie xml pomocou xpath
 
+            // Hladam zmeny v outpute
             OutputChangeActivity outputActivity = new OutputChangeActivity();
             outputActivity.findDifferenceInOutput(manager, navigator);
 
+            // Hladam zmeny v inpute
             InputChangeActivity inputActivity = new InputChangeActivity();
             inputActivity.findDifferenceInInput(manager, navigator);
 
+            // Hladam pridane funkcie
+            AddFunctionActivity addFunctionActivity = new AddFunctionActivity();
+            addFunctionActivity.findAddedFunctions(manager, navigator);
+
+            // Hladam zmenene volania funkcie
+            CallFunctionChangeActivity callFunctionChangedActivity = new CallFunctionChangeActivity();
+            callFunctionChangedActivity.findChangedFunctionCalls(manager,navigator);
+            
             //SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
             //specialCaseActivity.findDifferenceInOutput(manager, navigator);
         }
