@@ -297,6 +297,24 @@ namespace ConsoleApplication12
                 }
         }
 
+        private void notMatchedIndexing(XmlDocument doc1, XmlNodeList list1)
+        {
+            foreach (XmlNode listNode in list1)
+                    if (listNode.NodeType == XmlNodeType.Element)
+                    {
+                        var idAtrib = listNode.Attributes.GetNamedItem("id");
+                        if (idAtrib == null)
+                        {
+                            XmlAttribute idAttr = doc1.CreateAttribute("id");
+                            idAttr.Value = id.ToString();
+                            listNode.Attributes.Append(idAttr);
+                            id++;
+                        }
+                        if (listNode.HasChildNodes)
+                            notMatchedIndexing(doc1, listNode.ChildNodes);
+                    }
+        }
+
         public void xmlIndexing(String fileName1, String fileName2)
         {
             XmlDocument doc1 = new XmlDocument();
@@ -319,6 +337,8 @@ namespace ConsoleApplication12
 
             computeSimilarity(doc1, doc2, node1, node2);
             recursiveSimilarity(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
+            notMatchedIndexing(doc1, node1.ChildNodes);
+            notMatchedIndexing(doc2, node2.ChildNodes);
             doc1.Save("source_data1.xml");
             doc2.Save("source_data2.xml");
         }

@@ -40,6 +40,7 @@ namespace ConsoleApplication12
 
         static void Main(string[] args)
         {
+            DateTime start = DateTime.Now;
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
             
             //String my_source = my_runner.GenerateSrcMLFromString("#include <stdio.h> \nint main() {\n int i,j;\n printf(\"\");}", ABB.SrcML.Language.C);
@@ -70,7 +71,7 @@ namespace ConsoleApplication12
 
             SimilarityBaseIndexing indexing = new SimilarityBaseIndexing();
             indexing.xmlIndexing("source_data1.xml","source_data2.xml");
-            
+         
 
             ///////////////////////////////////////// Indexing elements end ///////////////////////////////
             String  diffString = "tempDiff.xml";
@@ -79,7 +80,7 @@ namespace ConsoleApplication12
             //GenerateDiffGram("source_data1.xml", "source_data2.xml", writer);
             //System.Console.WriteLine(diffString.ToString());
             
-            System.Console.ReadLine();
+            
 
             //System.Console.WriteLine(source_str);
            
@@ -171,8 +172,13 @@ namespace ConsoleApplication12
             CallFunctionChangeActivity callFunctionChangedActivity = new CallFunctionChangeActivity();
             callFunctionChangedActivity.findChangedFunctionCalls(manager,navigator);
             
-            //SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
-            //specialCaseActivity.findDifferenceInOutput(manager, navigator);
+            // Hladam pridanie okrajovych pripadov
+            SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
+
+            specialCaseActivity.findSpecialCaseAdd(manager, navigator);
+            TimeSpan timeItTook = DateTime.Now - start;
+            Console.WriteLine(timeItTook);
+            Console.ReadKey();
         }
     }
 }

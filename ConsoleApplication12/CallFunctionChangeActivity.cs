@@ -215,6 +215,15 @@ namespace ConsoleApplication12
             XElement functionCallElement = null;
             String funcCallName = callNameNav.Value;
 
+            // Osetruje pripad ze diff zaznamena meno predchadzajucej funkcie ako zmazane a sucasnej ako pridane ....
+            List<String> callNames = new List<string>();
+            callNames.Add(funcCallName);
+            while (callChildren.MoveNext() && callChildren.Current.Name == "name")
+            {
+                callNames.Add(callChildren.Current.Value);
+            }
+
+
             // Ak doslo k modifikacii nazvuVolanej funkcie treba to osetrit
             if (funcCallName.Contains("~"))
             {
@@ -229,15 +238,33 @@ namespace ConsoleApplication12
                 else
                     modification_type = "name";
             }
+            else if(callNames.Count > 1)
+            {
+                functionCallElement = new XElement("function_name",
+                    new XElement("before", callNames.ElementAt(1)),
+                    new XElement("after", callNames.ElementAt(0)));
+                // Bol zmeneny nazov funkcie preto dame do modification type name
+                if (String.Compare(modification_type, "") != 0)
+                    modification_type = "name" + "+" + modification_type;
+                else
+                    modification_type = "name";
+            }
             else
             {
                 functionCallElement = new XElement("function_name",
-                    new XElement("before", callNameNav.Value),
-                    new XElement("after", callNameNav.Value));
+                    new XElement("before", funcCallName),
+                    new XElement("after", funcCallName));
             }
 
             XElement functionElement = null;
             String funcName = functionNameNav.Value;
+
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
 
             // Ak doslo k modifikacii nazvu funkcie treba to osetrit
             if (funcName.Contains("~"))
@@ -248,11 +275,17 @@ namespace ConsoleApplication12
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
             else
             {
                 functionElement = new XElement("function_name",
-                    new XElement("before", functionNameNav.Value),
-                    new XElement("after", functionNameNav.Value));
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
             }
 
             
@@ -332,6 +365,13 @@ namespace ConsoleApplication12
             XElement functionElement = null;
             String funcName = functionNameNav.Value;
 
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
+
             // Ak doslo k modifikacii nazvu funkcie treba to osetrit
             if (funcName.Contains("~"))
             {
@@ -341,11 +381,17 @@ namespace ConsoleApplication12
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
             else
             {
                 functionElement = new XElement("function_name",
-                    new XElement("before", functionNameNav.Value),
-                    new XElement("after", functionNameNav.Value));
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
             }
 
 
@@ -416,6 +462,13 @@ namespace ConsoleApplication12
             XElement functionElement = null;
             String funcName = functionNameNav.Value;
 
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
+
             // Ak doslo k modifikacii nazvu funkcie treba to osetrit
             if (funcName.Contains("~"))
             {
@@ -425,11 +478,17 @@ namespace ConsoleApplication12
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
             else
             {
                 functionElement = new XElement("function_name",
-                    new XElement("before", functionNameNav.Value),
-                    new XElement("after", functionNameNav.Value));
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
             }
 
 

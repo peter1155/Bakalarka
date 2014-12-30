@@ -530,21 +530,36 @@ namespace ConsoleApplication12
 
             XElement functionElement = null;
             String funcName = functionNameNav.Value;
-            
+
+            // Osetruje pripad ze diff zaznamena meno predchadzajucej funkcie ako zmazane a sucasnej ako pridane ....
+            List<String> callNames = new List<string>();
+            callNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                callNames.Add(function_childeren.Current.Value);
+            }
+
             // Ak doslo k modifikacii nazvu funkcie treba to osetrit
-            if(funcName.Contains("~"))
+            if (funcName.Contains("~"))
             {
                 char[] del = { '~' };
                 beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name", 
-                    new XElement("before",beforeAfterValues[0]),
-                    new XElement("after",beforeAfterValues[1]));
+                functionElement = new XElement("function_name",
+                    new XElement("before", beforeAfterValues[0]),
+                    new XElement("after", beforeAfterValues[1]));
+            }
+            else if (callNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", callNames.ElementAt(1)),
+                    new XElement("after", callNames.ElementAt(0)));
             }
             else
             {
-                functionElement = new XElement("function_name",functionNameNav.Value);
+                functionElement = new XElement("function_name",
+                    new XElement("before", functionNameNav.Value),
+                    new XElement("after", functionNameNav.Value));
             }
-
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
