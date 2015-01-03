@@ -56,7 +56,9 @@
   <ItemGroup>
     <Compile Include="AddFunctionActivity.cs" />
     <Compile Include="CallFunctionChangeActivity.cs" />
+    <Compile Include="ConditionChangeActivity.cs" />
     <Compile Include="InputChangeActivity.cs" />
+    <Compile Include="LoopChangeActivity.cs" />
     <Compile Include="OutputChangeActivity.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

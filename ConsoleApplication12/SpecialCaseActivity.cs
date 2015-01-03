@@ -110,19 +110,19 @@ namespace ConsoleApplication12
             {
                 char[] del = { '~' };
                 string[] beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name",
+                functionElement = new XElement("name",
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
             else if (funcNames.Count > 1)
             {
-                functionElement = new XElement("function_name",
+                functionElement = new XElement("name",
                     new XElement("before", funcNames.ElementAt(1)),
                     new XElement("after", funcNames.ElementAt(0)));
             }
             else
             {
-                functionElement = new XElement("function_name",
+                functionElement = new XElement("name",
                     new XElement("before", funcName),
                     new XElement("after", funcName));
             }

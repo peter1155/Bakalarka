@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
+
 namespace ConsoleApplication12
 {
     class SimilarityBaseIndexing
@@ -92,6 +93,7 @@ namespace ConsoleApplication12
                             i2 = j;
                         }
                     }
+                
                 sum += max;
                 for (int j = 0; j < matrix.GetLength(1); j++)
                     matrix[i1, j] = 0;
@@ -129,7 +131,27 @@ namespace ConsoleApplication12
                 for (int j = 0; j < root2.ChildNodes.Count; j++)
                 {
                     depth++;
-                    matrix[i, j] = computeSimilarity(doc1, doc2, list1.Item(i), list2.Item(j));
+                    //matrix[i, j] = computeSimilarity(doc1, doc2, list1.Item((int)i), list2.Item(j));
+
+                    // Ak budu problemy treba zakomentovat ... 
+                    if (matrix[i, j] != -1)
+                    {
+                        matrix[i, j] = computeSimilarity(doc1, doc2, list1.Item(i), list2.Item(j));
+                        if (matrix[i, j] == 1)
+                        {
+                            for (int k = j + 1; k < root2.ChildNodes.Count; k++)
+                            {
+                                matrix[i, k] = 0;
+                            }
+                            for (int k = i + 1; k < root1.ChildNodes.Count; k++)
+                            {
+                                matrix[k, j] = -1;
+                            }
+                            depth--;
+                            break;
+                        }
+                    }
+                    // Toto je na zrychlenie algoritmu indexovania len by to mohlo sposobovat chyby 
                     depth--;
                 }
 
@@ -172,7 +194,6 @@ namespace ConsoleApplication12
                         resultTable[tempIdValue1, tempIdValue2] = similarity;
                     }
                 }
-
             }
             else
             {
@@ -330,17 +351,22 @@ namespace ConsoleApplication12
             tempIndedxing(doc2, doc2.ChildNodes);
             tempId2 = tempIndex;
             resultTable = new float[tempId1, tempId2];
-
             for (int i = 0; i < tempId1; i++)
                 for (int j = 0; j < tempId2; j++)
                     resultTable[i, j] = -1;
 
+            DateTime start = DateTime.Now;
             computeSimilarity(doc1, doc2, node1, node2);
+            TimeSpan timeItTook = DateTime.Now - start;
+            Console.WriteLine(timeItTook);
+            start = DateTime.Now;
             recursiveSimilarity(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
             notMatchedIndexing(doc1, node1.ChildNodes);
             notMatchedIndexing(doc2, node2.ChildNodes);
             doc1.Save("source_data1.xml");
             doc2.Save("source_data2.xml");
+            timeItTook = DateTime.Now - start;
+            Console.WriteLine(timeItTook);
         }
     }
 }

@@ -113,7 +113,6 @@ namespace ConsoleApplication12
             System.Console.WriteLine(document);*/
             //System.Console.ReadLine();
 
-
             string filename = "libxmldiff_new\\xmldiff";
             // Ako separator pouzivam tildu ta by sa v kode nemala vyskytnut
             string parameteres = " diff --ids @id --ignore @line,@column,@similarity,@temp_id --sep ~ source_data1.xml source_data2.xml difference.xml";
@@ -174,8 +173,17 @@ namespace ConsoleApplication12
             
             // Hladam pridanie okrajovych pripadov
             SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
-
             specialCaseActivity.findSpecialCaseAdd(manager, navigator);
+
+            // Hladam zmenene podmienky
+            ConditionChangeActivity conditionChangeActivity = new ConditionChangeActivity();
+            conditionChangeActivity.findConditionChange(manager, navigator);
+            
+            // Hladam zmenu na podmienkach cyklu
+            LoopChangeActivity loopChangeActivity = new LoopChangeActivity();
+            loopChangeActivity.findLoopChange(manager,navigator);
+
+            
             TimeSpan timeItTook = DateTime.Now - start;
             Console.WriteLine(timeItTook);
             Console.ReadKey();
