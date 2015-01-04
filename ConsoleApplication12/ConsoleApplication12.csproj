@@ -60,6 +60,7 @@
     <Compile Include="ConditionChangeActivity.cs" />
     <Compile Include="InputChangeActivity.cs" />
     <Compile Include="LoopChangeActivity.cs" />
+    <Compile Include="OutputCanceledActivity.cs" />
     <Compile Include="OutputChangeActivity.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

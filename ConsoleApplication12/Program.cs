@@ -191,6 +191,10 @@ namespace ConsoleApplication12
             ArrayIndexingActivity arrayIndexingActivity = new ArrayIndexingActivity();
             arrayIndexingActivity.findArrayIndexingModification(manager, navigator);
 
+            // Hladam zrusene pomocne vypisy
+            OutputCanceledActivity outputCanceledActivity = new OutputCanceledActivity();
+            outputCanceledActivity.findCanaceledOutput(manager,navigator);
+
             TimeSpan timeItTook = DateTime.Now - start;
             Console.WriteLine(timeItTook);
             Console.ReadKey();
