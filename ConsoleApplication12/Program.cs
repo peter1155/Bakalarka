@@ -183,7 +183,14 @@ namespace ConsoleApplication12
             LoopChangeActivity loopChangeActivity = new LoopChangeActivity();
             loopChangeActivity.findLoopChange(manager,navigator);
 
-            
+            // Hladam zrusene premenne
+            VariableDeclarationActivity variableDeclarationActivity = new VariableDeclarationActivity();
+            variableDeclarationActivity.findVariableRemoved(manager, navigator);
+
+            // Hladam zmenu v indexovani poli
+            ArrayIndexingActivity arrayIndexingActivity = new ArrayIndexingActivity();
+            arrayIndexingActivity.findArrayIndexingModification(manager, navigator);
+
             TimeSpan timeItTook = DateTime.Now - start;
             Console.WriteLine(timeItTook);
             Console.ReadKey();

@@ -63,8 +63,10 @@ namespace ConsoleApplication12
         // Vracia textovu podobnost dvoch stringov
         private float computeStringSimilarity(string str1, string str2)
         {
+            if (str1 == "" && str2 == "")
+                return 1;
             int lcs = LCS(str1, str2);
-            float avarage = (str1.Length + str2.Length) / 2;
+            float avarage = (str1.Length + str2.Length) / (float) 2;
             return lcs / avarage;
         }
 
