@@ -119,7 +119,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "condition_change"),
                     new XElement("type", "condition_modified"),
                     functionElement,
@@ -150,7 +150,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "condition_change"),
                     new XElement("type", "body_modified"),
                     new XElement("branch", branch),
@@ -177,7 +177,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "condition_change"),
                     new XElement("type", "else_added/removed"),
                     new XElement("diff_type",type),

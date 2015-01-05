@@ -14,17 +14,6 @@ namespace ConsoleApplication12
 {
     class Program
     {
-        public static void GenerateDiffGram(string originalFile, string finalFile,
-                            XmlWriter diffGramWriter)
-        {
-            XmlDiff xmldiff = new XmlDiff(XmlDiffOptions.IgnoreChildOrder |
-                                         XmlDiffOptions.IgnoreNamespaces |
-                                         XmlDiffOptions.IgnorePrefixes
-                                         );
-            bool bIdentical = xmldiff.Compare(originalFile, finalFile, false, diffGramWriter);
-            diffGramWriter.Close();
-        }
-
         public static void createXMLDoc()
         {
             XmlDocument doc = new XmlDocument();
@@ -198,6 +187,10 @@ namespace ConsoleApplication12
             // Hladam zakomentovane a odkomentovane casti kodu
             CommentActivity commentActivity = new CommentActivity();
             commentActivity.findCanaceledOutput(manager, navigator);
+
+            // Hladam refctoring kodu
+            RefactorActivity refactorActivity = new RefactorActivity();
+            refactorActivity.findRefactoring();
 
             TimeSpan timeItTook = DateTime.Now - start;
             Console.WriteLine(timeItTook);

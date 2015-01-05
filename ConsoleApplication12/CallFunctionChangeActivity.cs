@@ -293,7 +293,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
             
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "modified"),
                     new XElement("modification_type",modification_type),
@@ -399,7 +399,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "added"),
                     functionElement,
@@ -496,7 +496,7 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "deleted"),
                     functionElement,

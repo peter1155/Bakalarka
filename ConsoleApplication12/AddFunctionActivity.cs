@@ -89,11 +89,11 @@ namespace ConsoleApplication12
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
             
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "function_added"),
                 //new XElement("diffType", diffType),
                     new XElement("type", type),
-                    new XElement("name", name),
+                    new XElement("function_name", name),
                     parameter_list2,
                     new XElement("line", line),
                     new XElement("column", column)

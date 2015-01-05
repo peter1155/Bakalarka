@@ -322,7 +322,7 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "InputChange"),
                 //new XElement("diffType", diffType),
                     new XElement("type", type),
@@ -710,7 +710,7 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
             
-            XElement my_element = new XElement("acion",
+            XElement my_element = new XElement("action",
                     new XElement("name", "input_change"),
                 //new XElement("diffType", diffType),
                     new XElement("type", type),
