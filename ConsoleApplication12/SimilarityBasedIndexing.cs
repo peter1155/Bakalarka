@@ -188,8 +188,13 @@ namespace ConsoleApplication12
                     float nameSimilarity = computeStringSimilarity(root1.Name, root2.Name);
                     float childSimilarity = subelementSimilarity(doc1, doc2, root1, root2);
                     //XmlNodeList list1 = root1.ChildNodes;
-                    similarity = (textSimilarity + nameSimilarity + childSimilarity) / 3;
-
+                    
+                    // Pri komentaroch treaba pouzit tento vypocet lebo podobnost nazvov aj subelementov je vzdy 1
+                    if(root1.Name == "comment" && root2.Name == "comment")
+                        similarity = (textSimilarity*5 + nameSimilarity + childSimilarity) / 7;
+                    else
+                        similarity = (textSimilarity + nameSimilarity + childSimilarity) / 3;
+                    
                     // Ulozim hodnotu podobnosti do resultTable
                     if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
                     {

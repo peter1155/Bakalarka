@@ -195,6 +195,10 @@ namespace ConsoleApplication12
             OutputCanceledActivity outputCanceledActivity = new OutputCanceledActivity();
             outputCanceledActivity.findCanaceledOutput(manager,navigator);
 
+            // Hladam zakomentovane a odkomentovane casti kodu
+            CommentActivity commentActivity = new CommentActivity();
+            commentActivity.findCanaceledOutput(manager, navigator);
+
             TimeSpan timeItTook = DateTime.Now - start;
             Console.WriteLine(timeItTook);
             Console.ReadKey();

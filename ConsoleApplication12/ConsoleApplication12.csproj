@@ -57,6 +57,7 @@
     <Compile Include="AddFunctionActivity.cs" />
     <Compile Include="ArrayIndexingActivity.cs" />
     <Compile Include="CallFunctionChangeActivity.cs" />
+    <Compile Include="CommentActivity.cs" />
     <Compile Include="ConditionChangeActivity.cs" />
     <Compile Include="InputChangeActivity.cs" />
     <Compile Include="LoopChangeActivity.cs" />
