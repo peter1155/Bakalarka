@@ -32,11 +32,14 @@ namespace ConsoleApplication12
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
-            while (navigator != null && String.Compare(navigator.Name, "function") != 0)
+            while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
             {
                 navigator.MoveToParent();
             }
-            
+
+            if (navigator.Name == "unit")
+                return new XElement("errorInSource");
+
             // Ziska deti elementu function
             XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
 

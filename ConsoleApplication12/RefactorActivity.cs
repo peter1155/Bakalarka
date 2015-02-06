@@ -46,7 +46,7 @@ namespace ConsoleApplication12
             return callFuncElement;
         }
 
-        public void writeConstantDeleted(XPathNavigator callNavigator, XPathNavigator navigator)
+        public void writeRefactorActivity(XPathNavigator callNavigator, XPathNavigator navigator)
         {
             XElement addFuncElement = getFunctionAddedNode(navigator);
             XElement callFuncElement = getFunctionCallNode(callNavigator);
@@ -76,6 +76,7 @@ namespace ConsoleApplication12
             return navigator;
             
         }
+
         public void findRefactoring()
         {
             XPathNavigator navigator = loadIdentifiedActivities();
@@ -89,12 +90,12 @@ namespace ConsoleApplication12
                 XPathNavigator nameNavigator = nodesNavigator.SelectSingleNode("function_name");
 
                 XPathNavigator funcCall = navigator.SelectSingleNode("//action[name='function_call' and diff_type='added' and "
-                + "function_call/function_name='" + nameNavigator.Value +"']");
+                + "(function_call/function_name/before='" + nameNavigator.Value + "' or function_call/function_name/after='" + nameNavigator.Value + "')]");
                 
                 // Ak sa tam vyskytuje volanie pridanej funkcie zapis aktivitu
                 if(funcCall != null)
                 {
-                    writeConstantDeleted(funcCall, nodesNavigator);
+                    writeRefactorActivity(funcCall, nodesNavigator);
                 }
             }
 

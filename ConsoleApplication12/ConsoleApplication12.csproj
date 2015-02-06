@@ -57,6 +57,7 @@
     <Compile Include="AddFunctionActivity.cs" />
     <Compile Include="ArrayIndexingActivity.cs" />
     <Compile Include="CallFunctionChangeActivity.cs" />
+    <Compile Include="MoveDetection.cs" />
     <Compile Include="CommentActivity.cs" />
     <Compile Include="ConditionChangeActivity.cs" />
     <Compile Include="InputChangeActivity.cs" />
@@ -69,7 +70,6 @@
     <Compile Include="SimilarityBasedIndexing.cs" />
     <Compile Include="SpecialCaseActivity.cs" />
     <Compile Include="VariableDeclarationActivity.cs" />
-    <Compile Include="XPathNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

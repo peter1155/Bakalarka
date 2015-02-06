@@ -15,29 +15,45 @@ namespace ConsoleApplication12
 {
     class AddFunctionActivity
     {
-        
+        // Zapise prislusnu akciu do vystupneho xml suboru
         public void writeActionScan(XPathNavigator navigator)
         {
+            // Sluzi na zaznamenanie cisla riadku
             String line = null;
+
+            // Sluzi na zaznamenanie cisla stlpca
             String column = null;
+
+            // Sluzi na zaznamenanie typu pridanej funkcie
             String type = null;
+
+            // Sluzi na zaznamenanie mena pridanej funkcie
             String name = null;
+
+            // Sluzi na zaznamenie zoznamu parametrov
             XElement parameter_list2 = new XElement("parameter_list");
 
+            // Ziska pristup k detom elementu function
             XPathNodeIterator function_children = navigator.SelectChildren(XPathNodeType.Element);
+            
             while(function_children.MoveNext())
             {
                 XPathNavigator child = function_children.Current;
+                
+                // Ak je nazov aktualneho elementu type prirad hodnotu do type
                 if(String.Compare(child.Name,"type") == 0)
                 {
                     type = child.Value;
                 }
+
+                // Ak je nazov aktualneho elementu name prirad hodnotu do name a ziskaj poziciu z atributov line a column
                 else if(String.Compare(child.Name,"name") == 0)
                 {
                     name = child.Value;
                     line = child.GetAttribute("line", "http://www.sdml.info/srcML/position");
                     column = child.GetAttribute("column", "http://www.sdml.info/srcML/position");
                 }
+                // Ak je nazov aktualneho elementu parameter_list vytvor zoznam parametrov a pridaj ho do prislusneho elementu
                 else if(String.Compare(child.Name,"parameter_list") == 0)
                 {
                     XPathNodeIterator param_list = child.SelectChildren(XPathNodeType.Element);
@@ -91,7 +107,6 @@ namespace ConsoleApplication12
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "function_added"),
-                //new XElement("diffType", diffType),
                     new XElement("type", type),
                     new XElement("function_name", name),
                     parameter_list2,
@@ -102,11 +117,14 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
-        // Urobim dopyt nad difference XML dokumentom a vyhladam volania funkcie printf, kde nastala nejaka zmena
+        // Urobi dopyt nad difference XML dokumentom a vyhlada pridane funkcie ak sa nejake najdu
+        // zaznamena prislusnu akciu do vystupneho xml suboru
         public void findAddedFunctions(XmlNamespaceManager manager, XPathNavigator navigator)
         {
+            // Najde pridane funkcie
             XPathNodeIterator nodes = navigator.Select("//base:function[@diff:status='added']", manager);
 
+            // Prechadza zoznamom pridanych funkcii a zaznamenava ich do vystupneho xml suboru
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();

@@ -10,11 +10,33 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-
 namespace ConsoleApplication12
 {
     class CallFunctionChangeActivity
     {
+        public List<String> findPosition(String elementName, XPathNavigator navigator)
+        {
+            while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
+            {
+                navigator.MoveToParent();
+            }
+
+            // Ziskam pristup k detom elementu call
+            XPathNodeIterator callChildren =
+                navigator.SelectChildren(XPathNodeType.Element);
+
+            // Ziskam pristup k name kde sa nachadza prislusny attribut
+            while (callChildren.MoveNext() && callChildren.Current.Name != "name") ;
+
+            XPathNavigator callNameNav = callChildren.Current;
+            String line = callNameNav.GetAttribute("line", "http://www.sdml.info/srcML/position");
+            String column = callNameNav.GetAttribute("column", "http://www.sdml.info/srcML/position");
+
+            List<String> list = new List<string>();
+            list.Add(line);
+            list.Add(column);
+            return list;
+        }
 
         private String findInSource(String id, String fileName)
         {
@@ -48,6 +70,112 @@ namespace ConsoleApplication12
                 counter++;
             }
             return temp;
+        }
+
+        private XElement getFunctionNameElement(XPathNavigator navigator)
+        {
+            // Najde element function
+            while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
+            {
+                navigator.MoveToParent();
+            }
+
+            if (navigator.Name == "unit")
+                return new XElement("errorInSource");
+
+            // Ziska deti elementu function
+            XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
+
+            // Najde elemnt name elementu function 
+            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
+
+            XPathNavigator functionNameNavigator = function_childeren.Current;
+            XElement functionElement = null;
+            String funcName = functionNameNavigator.Value;
+
+            // Treba osetrit pripad ze nazov funkcie sa rapidne zmenil a je povazovany za zmazany a pridany
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
+
+            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
+            if (funcName.Contains("~"))
+            {
+                char[] del = { '~' };
+                string[] beforeAfterValues = funcName.Split(del);
+                functionElement = new XElement("function_name",
+                    new XElement("before", beforeAfterValues[0]),
+                    new XElement("after", beforeAfterValues[1]));
+            }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
+            else
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
+            }
+            return functionElement;
+        }
+
+        private XElement getFunctionCallNameElement(XPathNavigator navigator)
+        {
+            // Najde element function
+            while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "call") != 0)
+            {
+                navigator.MoveToParent();
+            }
+
+            if (navigator.Name == "unit")
+                return new XElement("errorInSource");
+
+            // Ziska deti elementu function
+            XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
+
+            // Najde elemnt name elementu function 
+            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
+
+            XPathNavigator functionNameNavigator = function_childeren.Current;
+            XElement functionElement = null;
+            String funcName = functionNameNavigator.Value;
+
+            // Treba osetrit pripad ze nazov funkcie sa rapidne zmenil a je povazovany za zmazany a pridany
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
+
+            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
+            if (funcName.Contains("~"))
+            {
+                char[] del = { '~' };
+                string[] beforeAfterValues = funcName.Split(del);
+                functionElement = new XElement("function_name",
+                    new XElement("before", beforeAfterValues[0]),
+                    new XElement("after", beforeAfterValues[1]));
+            }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
+            else
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
+            }
+            return functionElement;
         }
 
         private List<String> manualParse(XPathNavigator navigator)
@@ -163,20 +291,17 @@ namespace ConsoleApplication12
         {
 
             // Zistujem v ktorej funkcii je to vnorene
+            XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            XPathNavigator tempNavigator = navigator.Clone();
-            while (tempNavigator != null && String.Compare(tempNavigator.Name, "function") != 0)
-            {
-                tempNavigator.MoveToParent();
-            }
+            // Zistujem poziciu 
+            List<String> position = findPosition("call", navigator.Clone());
+            String line = position.ElementAt(0);
+            String column = position.ElementAt(1);
 
-            XPathNodeIterator function_childeren =
-                tempNavigator.SelectChildren(XPathNodeType.Element);
+            // Zistujem meno volanej funkcie
+            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
 
-            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
-            XPathNavigator functionNameNav = function_childeren.Current;
-
-            // Zistujem poziciu funkcie scanf
+            // Zistujem id elementu call 
             XPathNavigator tempNavigator2 = navigator.Clone();
             while (tempNavigator2 != null && String.Compare(tempNavigator2.Name, "call") != 0)
             {
@@ -192,101 +317,15 @@ namespace ConsoleApplication12
                 parametersBefore = list.ElementAt(0);
                 parametersAfter = list.ElementAt(1);
             }
-           
+            
             String modification_type = "";
 
             if (String.Compare(parametersBefore, parametersAfter) != 0)
                 modification_type = "parameter";
+            
             XElement function_parameters = new XElement("function_parameters");
             function_parameters.Add(new XElement("parameters_before", parametersBefore),
                 new XElement("parameters_after", parametersAfter));
-
-            // Ziskam pristup k detom elementu call
-            XPathNodeIterator callChildren =
-                tempNavigator2.SelectChildren(XPathNodeType.Element);
-
-            // Ziskam pristup k name kde sa nachadza prislusny attribut
-            while (callChildren.MoveNext() && callChildren.Current.Name != "name") ;
-
-            XPathNavigator callNameNav = callChildren.Current;
-            String line = callNameNav.GetAttribute("line", "http://www.sdml.info/srcML/position");
-            String column = callNameNav.GetAttribute("column", "http://www.sdml.info/srcML/position");
-
-            XElement functionCallElement = null;
-            String funcCallName = callNameNav.Value;
-
-            // Osetruje pripad ze diff zaznamena meno predchadzajucej funkcie ako zmazane a sucasnej ako pridane ....
-            List<String> callNames = new List<string>();
-            callNames.Add(funcCallName);
-            while (callChildren.MoveNext() && callChildren.Current.Name == "name")
-            {
-                callNames.Add(callChildren.Current.Value);
-            }
-
-
-            // Ak doslo k modifikacii nazvuVolanej funkcie treba to osetrit
-            if (funcCallName.Contains("~"))
-            {
-                char[] del = { '~' };
-                string[] beforeAfterValues = funcCallName.Split(del);
-                functionCallElement = new XElement("function_name",
-                    new XElement("before", beforeAfterValues[0]),
-                    new XElement("after", beforeAfterValues[1]));
-                // Bol zmeneny nazov funkcie preto dame do modification type name
-                if (String.Compare(modification_type, "") != 0)
-                    modification_type = "name" + "+" + modification_type;
-                else
-                    modification_type = "name";
-            }
-            else if(callNames.Count > 1)
-            {
-                functionCallElement = new XElement("function_name",
-                    new XElement("before", callNames.ElementAt(1)),
-                    new XElement("after", callNames.ElementAt(0)));
-                // Bol zmeneny nazov funkcie preto dame do modification type name
-                if (String.Compare(modification_type, "") != 0)
-                    modification_type = "name" + "+" + modification_type;
-                else
-                    modification_type = "name";
-            }
-            else
-            {
-                functionCallElement = new XElement("function_name",
-                    new XElement("before", funcCallName),
-                    new XElement("after", funcCallName));
-            }
-
-            XElement functionElement = null;
-            String funcName = functionNameNav.Value;
-
-            List<String> funcNames = new List<string>();
-            funcNames.Add(funcName);
-            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
-            {
-                funcNames.Add(function_childeren.Current.Value);
-            }
-
-            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
-            if (funcName.Contains("~"))
-            {
-                char[] del = { '~' };
-                string[] beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name",
-                    new XElement("before", beforeAfterValues[0]),
-                    new XElement("after", beforeAfterValues[1]));
-            }
-            else if (funcNames.Count > 1)
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcNames.ElementAt(1)),
-                    new XElement("after", funcNames.ElementAt(0)));
-            }
-            else
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcName),
-                    new XElement("after", funcName));
-            }
 
             
             // Zapisem akciu do xml suboru
@@ -310,96 +349,34 @@ namespace ConsoleApplication12
         public void writeActionCallAdded(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
+            XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            XPathNavigator tempNavigator = navigator.Clone();
-            while (tempNavigator != null && String.Compare(tempNavigator.Name, "function") != 0)
-            {
-                tempNavigator.MoveToParent();
-            }
+            // Zistujem poziciu 
+            List<String> position = findPosition("call", navigator.Clone());
+            String line = position.ElementAt(0);
+            String column = position.ElementAt(1);
 
-            XPathNodeIterator function_childeren =
-                tempNavigator.SelectChildren(XPathNodeType.Element);
+            // Zistujem meno volanej funkcie
+            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
 
-            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
-            XPathNavigator functionNameNav = function_childeren.Current;
-
-            // Zistujem poziciu funkcie scanf
+            // Zistujem poziciu funkci
             XPathNavigator tempNavigator2 = navigator.Clone();
             while (tempNavigator2 != null && String.Compare(tempNavigator2.Name, "call") != 0)
             {
                 tempNavigator2.MoveToParent();
             }
 
-            //String id = tempNavigator2.GetAttribute("id", "");
-            //String parametersBefore = findInSource(id, "source_data1.xml");
+            String id = tempNavigator2.GetAttribute("id", "");
             String parametersAfter;
-            //if (String.Compare(id, "") == 0)
-            //{
-                var list = manualParse(tempNavigator2.Clone());
-            //    parametersBefore = list.ElementAt(0);
-                parametersAfter = list.ElementAt(1);
-            //}
-
-            
+            var list = manualParse(tempNavigator2.Clone());
+            parametersAfter = list.ElementAt(1);
             XElement function_parameters = new XElement("function_parameters",parametersAfter);
-         
-
-            // Ziskam pristup k detom elementu call
-            XPathNodeIterator callChildren =
-                tempNavigator2.SelectChildren(XPathNodeType.Element);
-
-            // Ziskam pristup k name kde sa nachadza prislusny attribut
-            while (callChildren.MoveNext() && callChildren.Current.Name != "name") ;
-
-            XPathNavigator callNameNav = callChildren.Current;
-            String line = callNameNav.GetAttribute("line", "http://www.sdml.info/srcML/position");
-            String column = callNameNav.GetAttribute("column", "http://www.sdml.info/srcML/position");
-
-            XElement functionCallElement = null;
-            String funcCallName = callNameNav.Value;
-
-            // Kedze je volanie funkcie pridane nemohlo dojst k modifikacii
-  
-            functionCallElement = new XElement("function_name",funcCallName);
             
-            XElement functionElement = null;
-            String funcName = functionNameNav.Value;
-
-            List<String> funcNames = new List<string>();
-            funcNames.Add(funcName);
-            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
-            {
-                funcNames.Add(function_childeren.Current.Value);
-            }
-
-            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
-            if (funcName.Contains("~"))
-            {
-                char[] del = { '~' };
-                string[] beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name",
-                    new XElement("before", beforeAfterValues[0]),
-                    new XElement("after", beforeAfterValues[1]));
-            }
-            else if (funcNames.Count > 1)
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcNames.ElementAt(1)),
-                    new XElement("after", funcNames.ElementAt(0)));
-            }
-            else
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcName),
-                    new XElement("after", funcName));
-            }
-
-
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("action",
+            XElement my_element = new XElement("action", new XAttribute("id", id),
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "added"),
                     functionElement,
@@ -415,18 +392,15 @@ namespace ConsoleApplication12
         public void writeActionCallDeleted(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
+            XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            XPathNavigator tempNavigator = navigator.Clone();
-            while (tempNavigator != null && String.Compare(tempNavigator.Name, "function") != 0)
-            {
-                tempNavigator.MoveToParent();
-            }
+            // Zistujem poziciu 
+            List<String> position = findPosition("call", navigator.Clone());
+            String line = position.ElementAt(0);
+            String column = position.ElementAt(1);
 
-            XPathNodeIterator function_childeren =
-                tempNavigator.SelectChildren(XPathNodeType.Element);
-
-            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
-            XPathNavigator functionNameNav = function_childeren.Current;
+            // Zistujem meno volanej funkcie
+            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
 
             // Zistujem poziciu funkcie scanf
             XPathNavigator tempNavigator2 = navigator.Clone();
@@ -435,68 +409,18 @@ namespace ConsoleApplication12
                 tempNavigator2.MoveToParent();
             }
 
+            String id = tempNavigator2.GetAttribute("id", "");
             String parametersBefore;            
             var list = manualParse(tempNavigator2.Clone());
             parametersBefore = list.ElementAt(0);
            
             XElement function_parameters = new XElement("function_parameters", parametersBefore);
 
-            // Ziskam pristup k detom elementu call
-            XPathNodeIterator callChildren =
-                tempNavigator2.SelectChildren(XPathNodeType.Element);
-
-            // Ziskam pristup k name kde sa nachadza prislusny attribut
-            while (callChildren.MoveNext() && callChildren.Current.Name != "name") ;
-
-            XPathNavigator callNameNav = callChildren.Current;
-            String line = callNameNav.GetAttribute("line", "http://www.sdml.info/srcML/position");
-            String column = callNameNav.GetAttribute("column", "http://www.sdml.info/srcML/position");
-
-            XElement functionCallElement = null;
-            String funcCallName = callNameNav.Value;
-
-            // Kedze je volanie funkcie pridane nemohlo dojst k modifikacii
-
-            functionCallElement = new XElement("function_name", funcCallName);
-
-            XElement functionElement = null;
-            String funcName = functionNameNav.Value;
-
-            List<String> funcNames = new List<string>();
-            funcNames.Add(funcName);
-            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
-            {
-                funcNames.Add(function_childeren.Current.Value);
-            }
-
-            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
-            if (funcName.Contains("~"))
-            {
-                char[] del = { '~' };
-                string[] beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name",
-                    new XElement("before", beforeAfterValues[0]),
-                    new XElement("after", beforeAfterValues[1]));
-            }
-            else if (funcNames.Count > 1)
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcNames.ElementAt(1)),
-                    new XElement("after", funcNames.ElementAt(0)));
-            }
-            else
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", funcName),
-                    new XElement("after", funcName));
-            }
-
-
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
-            XElement my_element = new XElement("action",
+            XElement my_element = new XElement("action", new XAttribute("id", id),
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "deleted"),
                     functionElement,
@@ -539,7 +463,8 @@ namespace ConsoleApplication12
            
             // Najskor identifikujeme modifikovane volania funkcii
             
-            XPathNodeIterator nodes = navigator.Select("//base:call[@diff:status='below']/base:name", manager);
+            XPathNodeIterator nodes = navigator.Select("//base:call[@diff:status='below']/base:name"
+                + " | //base:call[@similarity!='1']/base:name", manager);
             List<XPathNavigator> modifiedCalls =  new List<XPathNavigator>();
 
             while (nodes.MoveNext())
@@ -548,7 +473,7 @@ namespace ConsoleApplication12
                 for(int i=0; i< functionList.Count;i++)
                 {
                     String temp  = currentNode.Value;
-                    if(temp.Contains(functionList.ElementAt(i)))
+                    if(temp == functionList.ElementAt(i))
                     {
                         modifiedCalls.Add(currentNode.Clone());
                         break;
@@ -571,7 +496,7 @@ namespace ConsoleApplication12
                 for (int i = 0; i < functionList.Count; i++)
                 {
                     String temp = currentNode.Value;
-                    if (temp.Contains(functionList.ElementAt(i)))
+                    if (temp == functionList.ElementAt(i))
                     {
                         modifiedCalls.Add(currentNode.Clone());
                         break;
@@ -594,7 +519,7 @@ namespace ConsoleApplication12
                 for (int i = 0; i < functionList.Count; i++)
                 {
                     String temp = currentNode.Value;
-                    if (temp.Contains(functionList.ElementAt(i)))
+                    if (temp == functionList.ElementAt(i))
                     {
                         modifiedCalls.Add(currentNode.Clone());
                         break;

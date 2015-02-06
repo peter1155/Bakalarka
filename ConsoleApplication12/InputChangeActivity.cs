@@ -729,9 +729,9 @@ namespace ConsoleApplication12
         // Urobim dopyt nad difference XML dokumentom a vyhladam volania funkcie printf, kde nastala nejaka zmena
         public void findDifferenceInInput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            XPathNodeIterator nodes = navigator.Select("//base:call[base:name='scanf' and  @diff:status='below']/base:argument_list[" +
+            XPathNodeIterator nodes = navigator.Select("//base:call[not(base:name[@diff:status]) and base:name='scanf' and  @diff:status='below']/base:argument_list[" +
             "base:argument/base:expr[lit:literal/@diff:status or base:name/@diff:status or base:call/@diff:status]]"
-            , manager);
+            + " | //base:call[not(base:name[@diff:status]) and base:name='scanf']/base:argument_list[@similarity!='1'] ", manager);
 
             while (nodes.MoveNext())
             {

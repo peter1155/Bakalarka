@@ -15,6 +15,14 @@ namespace ConsoleApplication12
 {
     class CommentActivity
     {
+        private String fileName1;
+        private String fileName2;
+        
+        public CommentActivity(String file1, String file2)
+        {
+            fileName1 = file1+".c";
+            fileName2 = file2+".c";
+        }
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -202,45 +210,52 @@ namespace ConsoleApplication12
             return temp;
         }
 
+        private string readFile(string fileName)
+        {
+            string fileContent = "";
+            string line;
+
+            // Read the file and display it line by line.
+            System.IO.StreamReader file =
+               new System.IO.StreamReader(fileName);
+            while ((line = file.ReadLine()) != null)
+            {
+                fileContent += line;
+            }
+            file.Close();
+            return fileContent;
+        }
+
         public void findCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodesCommentAdded = navigator.Select("//base:comment[@diff:status='added']", manager);
             XPathNodeIterator nodesCommentRemoved = navigator.Select("//base:comment[@diff:status='removed']", manager);
-            
-            // Spracujem xml prvej a druhej verzie 
-            String firstSource = prcessXmlFile("source_data1.xml");
-            String secondSource = prcessXmlFile("source_data2.xml");
+           
+            String firstSource = readFile(fileName1);
 
-            firstSource = removeNamespaces(firstSource);
-            secondSource = removeNamespaces(secondSource);
-            
+            firstSource = firstSource.Replace("\t", "");
+            firstSource = firstSource.Replace("\n", "");
+            firstSource = firstSource.Replace(" ", "");
+
+            String secondSource = readFile(fileName2);
+
+            secondSource = secondSource.Replace("\t", "");
+            secondSource = secondSource.Replace("\n", "");
+            secondSource = secondSource.Replace(" ", "");
+
             while (nodesCommentAdded.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodesCommentAdded.Current;
 
-                // Vygenerujem xml z obsahu komentara
                 String temp = nodesNavigator.Value;
                 temp = temp.Replace("//","");
                 temp = temp.Replace("/*", "");
                 temp = temp.Replace("*/", "");
-                ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
-                String xmlString = my_runner.GenerateSrcMLFromString(temp);
+                // Vymaz whitespaces
+                temp = temp.Replace("\t", "");
+                temp = temp.Replace("\n", "");
+                temp = temp.Replace(" ", "");
 
-                // Este treba zmazat atributy
-
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(xmlString);
-                attributeDelete(doc.ChildNodes);
-                temp = "";
-            
-                var children = doc.ChildNodes;
-                foreach(XmlNode child in children)
-                {
-                    temp += child.InnerXml;
-                }
-
-                temp = removeNamespaces(temp);
-                
                 if(firstSource.Contains(temp))
                 {
                     writeActionCommentAdded(manager, nodesNavigator);
@@ -251,28 +266,15 @@ namespace ConsoleApplication12
             {
                 XPathNavigator nodesNavigator = nodesCommentRemoved.Current;
 
-                // Vygenerujem xml z obsahu komentara
                 String temp = nodesNavigator.Value;
                 temp = temp.Replace("//", "");
                 temp = temp.Replace("/*", "");
                 temp = temp.Replace("*/", "");
-                ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
-                String xmlString = my_runner.GenerateSrcMLFromString(temp);
 
-                // Este treba zmazat atributy
-
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(xmlString);
-                attributeDelete(doc.ChildNodes);
-                temp = "";
-
-                var children = doc.ChildNodes;
-                foreach (XmlNode child in children)
-                {
-                    temp += child.InnerXml;
-                }
-
-                temp = removeNamespaces(temp);
+                // Vymaz whitespaces
+                temp = temp.Replace("\t", "");
+                temp = temp.Replace("\n", "");
+                temp = temp.Replace(" ", "");
 
                 if (secondSource.Contains(temp))
                 {

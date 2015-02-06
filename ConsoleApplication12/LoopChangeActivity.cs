@@ -17,10 +17,13 @@ namespace ConsoleApplication12
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
-            while (navigator != null && String.Compare(navigator.Name, "function") != 0)
+            while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
             {
                 navigator.MoveToParent();
             }
+
+            if (navigator.Name == "unit")
+                return new XElement("errorInSource");
 
             // Ziska deti elementu function
             XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
@@ -123,9 +126,9 @@ namespace ConsoleApplication12
 
         public void writeActionLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            String parent = getParent(navigator.Clone());
+            String parent = navigator.Name;//= getParent(navigator.Clone());
             // Zistujem poziciu if
-            List<String> list = findPosition("condition", navigator.Clone());
+            List<String> list = findPosition(parent, navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
@@ -234,8 +237,9 @@ namespace ConsoleApplication12
 
         public void findLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            XPathNodeIterator nodes = navigator.Select("//base:while[@diff:status='below' or @diff:status='modified']/base:condition[@diff:status]"
-                + " | //base:do[@diff:status='below' or @diff:status='modified']/base:condition[@diff:status]",manager);
+            XPathNodeIterator nodes = navigator.Select("//base:while[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
+                + " | //base:do[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
+                + " | //base:do[base:condition[@similarity!='1']] | //base:while[base:condition[@similarity!='1']]", manager);
 
             while (nodes.MoveNext())
             {
@@ -244,7 +248,9 @@ namespace ConsoleApplication12
             }
 
             nodes = navigator.Select("//base:for[(@diff:status='below' or @diff:status='modified') and"
-            + " (base:init/@diff:status or base:incr/@diff:status or base:condition/@diff:status)]", manager);
+            + " (base:init/@diff:status or base:incr/@diff:status or base:condition/@diff:status)]"
+            + " | //base:for[base:init[@similarity!='1']]  | //base:for[base:incr[@similarity!='1']]"
+            + " | //base:for[base:condition[@similarity!='1']]", manager);
 
             while (nodes.MoveNext())
             {

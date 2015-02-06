@@ -17,10 +17,13 @@ namespace ConsoleApplication12
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
-            while (navigator != null && String.Compare(navigator.Name, "function") != 0)
+            while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
             {
                 navigator.MoveToParent();
             }
+
+            if (navigator.Name == "unit")
+                return new XElement("errorInSource");
 
             // Ziska deti elementu function
             XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
@@ -210,7 +213,8 @@ namespace ConsoleApplication12
 
         public void findConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status='below']/base:condition[@diff:status]", manager);
+            XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status='below' and base:condition[@diff:status]]"
+                + " | //base:if[base:condition[@similarity!='1']]", manager);
 
             while (nodes.MoveNext())
             {
@@ -218,18 +222,21 @@ namespace ConsoleApplication12
                 writeActionConditionChange(manager, nodesNavigator);
             }
 
-            nodes = navigator.Select("//base:if[@diff:status='below']/base:then[@diff:status='below'] | "
-                +"//base:if[@diff:status='below']/base:else[@diff:status='below'] | "
-                +"//base:if[@diff:status='below']/base:elseif[@diff:status='below']", manager);
+            /*nodes = navigator.Select("//base:if[@diff:status='below']/base:then[@diff:status='below'] "
+                +" | //base:if[@diff:status='below']/base:else[@diff:status='below'] "
+                +" | //base:if[@diff:status='below']/base:elseif[@diff:status='below']"
+                +" | //base:if/base:then[@similarity!='1']"
+                +" | //base:if/base:else[@similarity!='1']"
+                +" | //base:if/base:elseif[@similarity!='1']", manager);
                 
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
                 writeActionConditionChangeIfElse(manager, nodesNavigator);
-            }
+            }*/
 
-            nodes = navigator.Select("//base:if[@diff:status='below']/base:else[@diff:status='added' or @diff:status='removed'] | "
-                + "//base:if[@diff:status='below']/base:elseif[@diff:status='added' or @diff:status='removed']", manager);
+            nodes = navigator.Select("//base:if[@diff:status='below']/base:else[@diff:status='added' or @diff:status='removed']"
+                + " | //base:if[@diff:status='below']/base:elseif[@diff:status='added' or @diff:status='removed']", manager);
 
             while (nodes.MoveNext())
             {

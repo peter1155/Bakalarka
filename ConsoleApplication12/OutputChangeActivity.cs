@@ -420,6 +420,55 @@ namespace ConsoleApplication12
 {
     class OutputChangeActivity
     {
+        private XElement getFunctionNameElement(XPathNavigator navigator)
+        {
+            // Najde element function
+            while (navigator != null && String.Compare(navigator.Name, "function") != 0)
+            {
+                navigator.MoveToParent();
+            }
+
+            // Ziska deti elementu function
+            XPathNodeIterator function_childeren = navigator.SelectChildren(XPathNodeType.Element);
+
+            // Najde elemnt name elementu function 
+            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
+
+            XPathNavigator functionNameNavigator = function_childeren.Current;
+            XElement functionElement = null;
+            String funcName = functionNameNavigator.Value;
+
+            // Treba osetrit pripad ze nazov funkcie sa rapidne zmenil a je povazovany za zmazany a pridany
+            List<String> funcNames = new List<string>();
+            funcNames.Add(funcName);
+            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
+            {
+                funcNames.Add(function_childeren.Current.Value);
+            }
+
+            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
+            if (funcName.Contains("~"))
+            {
+                char[] del = { '~' };
+                string[] beforeAfterValues = funcName.Split(del);
+                functionElement = new XElement("function_name",
+                    new XElement("before", beforeAfterValues[0]),
+                    new XElement("after", beforeAfterValues[1]));
+            }
+            else if (funcNames.Count > 1)
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcNames.ElementAt(1)),
+                    new XElement("after", funcNames.ElementAt(0)));
+            }
+            else
+            {
+                functionElement = new XElement("function_name",
+                    new XElement("before", funcName),
+                    new XElement("after", funcName));
+            }
+            return functionElement;
+        }
 
         private String findInSource(String id, String fileName)
         {
@@ -457,28 +506,16 @@ namespace ConsoleApplication12
 
         public void writeActionScan(XPathNavigator navigator)
         {
-            // Zistujem v ktorej funkcii je to vnorene
+            XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            XPathNavigator tempNavigator = navigator.Clone();
-            while (tempNavigator != null && String.Compare(tempNavigator.Name, "function") != 0)
-            {
-                tempNavigator.MoveToParent();
-            }
-
-            XPathNodeIterator function_childeren =
-                tempNavigator.SelectChildren(XPathNodeType.Element);
-
-            while (function_childeren.MoveNext() && function_childeren.Current.Name != "name") ;
-            XPathNavigator functionNameNav = function_childeren.Current;
-
-            // Zistujem poziciu funkcie scanf
+            // Zistujem poziciu funkcie printf
             XPathNavigator tempNavigator2 = navigator.Clone();
             while (tempNavigator2 != null && String.Compare(tempNavigator2.Name, "call") != 0)
             {
                 tempNavigator2.MoveToParent();
             }
 
-            // Ziskam id funkcie scanf
+            // Ziskam id funkcie printf
             String id = tempNavigator2.GetAttribute("id", "");
             String parametersBefore = findInSource(id, "source_data1.xml");
             String parametersAfter = findInSource(id, "source_data2.xml");
@@ -528,38 +565,7 @@ namespace ConsoleApplication12
                 type = "parameter";
             }
 
-            XElement functionElement = null;
-            String funcName = functionNameNav.Value;
-
-            // Osetruje pripad ze diff zaznamena meno predchadzajucej funkcie ako zmazane a sucasnej ako pridane ....
-            List<String> callNames = new List<string>();
-            callNames.Add(funcName);
-            while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
-            {
-                callNames.Add(function_childeren.Current.Value);
-            }
-
-            // Ak doslo k modifikacii nazvu funkcie treba to osetrit
-            if (funcName.Contains("~"))
-            {
-                char[] del = { '~' };
-                beforeAfterValues = funcName.Split(del);
-                functionElement = new XElement("function_name",
-                    new XElement("before", beforeAfterValues[0]),
-                    new XElement("after", beforeAfterValues[1]));
-            }
-            else if (callNames.Count > 1)
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", callNames.ElementAt(1)),
-                    new XElement("after", callNames.ElementAt(0)));
-            }
-            else
-            {
-                functionElement = new XElement("function_name",
-                    new XElement("before", functionNameNav.Value),
-                    new XElement("after", functionNameNav.Value));
-            }
+            
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -583,9 +589,9 @@ namespace ConsoleApplication12
         // Urobim dopyt nad difference XML dokumentom a vyhladam volania funkcie printf, kde nastala nejaka zmena
         public void findDifferenceInOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            XPathNodeIterator nodes = navigator.Select("//base:call[base:name='printf' and  @diff:status='below']/base:argument_list[" +
+            XPathNodeIterator nodes = navigator.Select("//base:call[not(base:name[@diff:status]) and base:name='printf' and  @diff:status='below']/base:argument_list[" +
             "base:argument/base:expr[lit:literal/@diff:status or base:name/@diff:status or base:call/@diff:status]]"
-            , manager);
+            + " | //base:call[not(base:name[@diff:status]) and base:name='printf']/base:argument_list[@similarity != '1']", manager);
 
             while (nodes.MoveNext())
             {
