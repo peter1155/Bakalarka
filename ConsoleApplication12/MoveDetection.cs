@@ -11,7 +11,7 @@ namespace ConsoleApplication12
     class MoveDetection
     {
         private void detectCallFunctionMoves(XmlDocument doc)
-        {
+        { 
             // Najdi vsetky elementy action ktorych meno je function_call a diff_type je added
             XmlNodeList nodesAdded = doc.SelectNodes("//action[name='function_call' and diff_type='added']");
             

@@ -14,6 +14,7 @@ namespace ConsoleApplication12
 {
     class VariableDeclarationActivity
     {
+        // Hlada nazov funkcie v ktorej je to vnorene a vytvara prislusny function element
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -69,6 +70,7 @@ namespace ConsoleApplication12
             return functionElement;
         }
 
+        // Hlada poziciu na ktorej sa nachadza element s nazvom elementName
         public List<String> findPosition(String elementName, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
@@ -84,6 +86,7 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Vracia typ vymazanej premennej ako string 
         private String getType(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, "decl_stmt") != 0)
@@ -96,6 +99,31 @@ namespace ConsoleApplication12
             return findInSource("source_data1.xml", id, manager);
         }
 
+        // Zistuje ci sa v skutocnosti nejedna o zmenu typu nie o vymazanie premennej
+        private bool findTypeChange(String varName, XElement element, XPathNavigator navigator, XmlNamespaceManager manager)
+        {
+            XPathNodeIterator nodes;
+            // Ziska nazov funkcie v druhej verzii
+            if (!element.ToString().Contains("global_variable"))
+            {
+                XNode functionNameAfter = element.LastNode;
+                String temp = functionNameAfter.ToString();
+                temp = temp.Replace("<after>", "");
+                temp = temp.Replace("</after>", "");
+                nodes = navigator.Select("//base:function[base:name='" + temp + "']//base:decl_stmt/base:decl[base:name='" + varName + "']", manager);
+            }
+            else
+            {
+                nodes = navigator.Select("//base:decl_stmt/base:decl[base:name='" + varName + "' and not(ancestor::base:function)]", manager);
+            }
+            
+            if (nodes.Count > 0)
+                return true;
+            else
+                return false;
+        }
+
+        // Zapisuje identifikovane zmazanie premennej do vystupneho xml suboru
         public void writeActionVariableDeleted(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
@@ -109,10 +137,13 @@ namespace ConsoleApplication12
             // Zistujem v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
+            // V pripade ze sa jedna iba o zmenu typu neidentifikuj vymazanie premennej
+            if (findTypeChange(name, functionElement, navigator.Clone(), manager))
+                return;
+
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "variable_declaration_deleted"),
                     new XElement("type", "variable"),
@@ -127,6 +158,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Vytvara element specialneho typu pre anonymnu strukturu alebo anonymny union
         public XElement getSpecialType(XPathNavigator navigator, XmlNamespaceManager manager)
         {
             while(String.Compare(navigator.Name, "unit") != 0 &&  String.Compare(navigator.Name, "struct") !=0
@@ -141,6 +173,7 @@ namespace ConsoleApplication12
             return specialType;
         }
 
+        // Zapisuje akciu zmazanie premennej anonymneho typu do xml suboru
         public void writeActionAnonymVariableDeleted(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
@@ -173,6 +206,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Vrati hodnotu konstanty s nazvom name ktora sa nachadza v subore fileName ako string  
         private String findConstantValue(String fileName, String name,XmlNamespaceManager manager)
         {
             XmlDocument doc = new XmlDocument();
@@ -190,6 +224,7 @@ namespace ConsoleApplication12
                 return nodes.Current.Value;
         }
 
+        // Zapise akciu vymazanie konstanty do vystupneho xml suboru
         public void writeConstantDeleted(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
@@ -217,6 +252,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Vracia typ vymazanej premennej na zaklade idecka a nazvu suboru fileName
         private String findInSource(String fileName, String id, XmlNamespaceManager manager)
         {
             XmlDocument doc = new XmlDocument();
@@ -232,8 +268,10 @@ namespace ConsoleApplication12
             return nodes.Current.Value;
         }
 
+        // Identifikuje akciu vymazanie premennej, konstanty a zaznamena ju do vystupneho xml suboru
         public void findVariableRemoved(XmlNamespaceManager manager, XPathNavigator navigator)
         {
+            // Identifikacia vymazania premennej 
             XPathNodeIterator nodes = navigator.Select("//base:decl_stmt[@diff:status]"
                 + "/base:decl[@diff:status='removed' and not(ancestor::base:typedef) and not(ancestor::base:union) and not(ancestor::base:struct)]/base:name", manager);
             
@@ -243,6 +281,7 @@ namespace ConsoleApplication12
                 writeActionVariableDeleted(manager, nodesNavigator);
             }
 
+            // Identifikacia zmazania premennych anonymnych typov (anonymna struktura a anonymny union)
             nodes = navigator.Select("//base:struct[@diff:status='removed']/base:decl[@diff:status='removed']/base:name[@diff:status='removed']"
                 + "| //base:union[@diff:status='removed']/base:decl[@diff:status='removed']/base:name[@diff:status='removed']", manager);
 
@@ -252,6 +291,7 @@ namespace ConsoleApplication12
                 writeActionAnonymVariableDeleted(manager, nodesNavigator);
             }
 
+            // Identifikacia vymazania zadefinovanej konstanty
             nodes = navigator.Select("//cpp:macro[@diff:status='removed' and not(base:parameter_list)]/base:name", manager);
             
             while (nodes.MoveNext())

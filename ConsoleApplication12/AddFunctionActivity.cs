@@ -12,7 +12,7 @@ using System.Xml.XPath;
 
 
 namespace ConsoleApplication12
-{
+{ 
     class AddFunctionActivity
     {
         // Zapise prislusnu akciu do vystupneho xml suboru
@@ -81,19 +81,24 @@ namespace ConsoleApplication12
                                 // Meno moze obsahovat indexy preto treba prechadzat postupne
                                 XPathNodeIterator name_children = decl_child.SelectChildren(XPathNodeType.Element);
                                 XElement nameElement = new XElement("name");
-                                while(name_children.MoveNext())
+                                if (name_children.Count > 0)
                                 {
-                                    XPathNavigator name_child = name_children.Current;
-                                    if (String.Compare(name_child.Name, "name") == 0)
+                                    while (name_children.MoveNext())
                                     {
-                                        nameElement.Add(new XElement("name", name_child.Value));
+                                        XPathNavigator name_child = name_children.Current;
+                                        if (String.Compare(name_child.Name, "name") == 0)
+                                        {
+                                            nameElement.Add(new XElement("name", name_child.Value));
+                                        }
+                                        if (String.Compare(name_child.Name, "index") == 0)
+                                        {
+                                            nameElement.Add(new XElement("index", name_child.Value));
+                                        }
                                     }
-                                    if (String.Compare(name_child.Name, "index") == 0)
-                                    {
-                                        nameElement.Add(new XElement("index", name_child.Value));
-                                    }
+                                    parameter.Add(nameElement);
                                 }
-                                parameter.Add(nameElement);
+                                else
+                                    parameter.Add(new XElement("name",decl_child.TypedValue));
                             }
                         }
                         parameter_list2.Add(parameter);

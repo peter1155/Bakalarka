@@ -176,7 +176,7 @@ namespace ConsoleApplication12
             names.Add(nameAfter);
             return names;
         }
-
+         
         // Sluzi na najdenie nazvu premennej - pola pri zmene indexovania pri pouziti v programe
         private List<String> getNameExpresion(XmlNamespaceManager manager, XPathNavigator navigator)
         {
@@ -481,8 +481,8 @@ namespace ConsoleApplication12
             initGlobalDocuments();
 
             // Najde elementy poli v ktorych nastala zmena v indexovani pri deklaracii
-            XPathNodeIterator nodes = navigator.Select("//base:decl[@diff:status]/base:name[base:index and (base:index/@diff:status='modified'" 
-                +" or base:index/@diff:status='below')]", manager);
+            XPathNodeIterator nodes = navigator.Select("//base:decl[@diff:status]/base:name[@diff:status='below' and base:index/@diff:status]"/*and (base:index/@diff:status='modified'" 
+                +" or base:index/@diff:status='below')]"*/, manager);
 
             // Prechadza vsetky najdene elementy a zapisuje najdene zmeny do vystupneho xml suboru
             while (nodes.MoveNext())
@@ -493,8 +493,8 @@ namespace ConsoleApplication12
 
 
             // Najde elementy poli v ktorych nastala zmena v indexovani pri pouziti v programe
-            nodes = navigator.Select("//base:expr[@diff:status]/base:name[base:index and (base:index/@diff:status='modified'"
-                + " or base:index/@diff:status='below')]", manager);
+            nodes = navigator.Select("//base:expr[@diff:status]/base:name[@diff:status='below' and base:index/@diff:status]"/* and (base:index/@diff:status='modified'"
+                + " or base:index/@diff:status='below')]"*/, manager);
 
             // Prechadza vsetky najdene elementy a zapisuje najdene zmeny do vystupneho xml suboru
             while (nodes.MoveNext())

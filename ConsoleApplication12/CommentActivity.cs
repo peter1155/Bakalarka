@@ -15,14 +15,21 @@ namespace ConsoleApplication12
 {
     class CommentActivity
     {
+        // Nazov suboru so zdrojovym kodom
         private String fileName1;
+
+        // Nazov suboru so zdrojovym kodom
         private String fileName2;
         
+        // V konstruktore sa do atributov triedy predaju nazvy suborov so zdrojovym kodom
         public CommentActivity(String file1, String file2)
         {
             fileName1 = file1+".c";
             fileName2 = file2+".c";
         }
+
+        // Ziska element s nazvom funkcie v ktorej je dany komentar vnoreny alebo
+        // zisti ze sa jedna o komentar na globalnej urovni
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -31,6 +38,7 @@ namespace ConsoleApplication12
                 navigator.MoveToParent();
             }
 
+            // Ak sa nenasiel element function jedna sa o element na globalnej urovni
             if (navigator.Name == "unit")
             {
                 return new XElement("global_comment");
@@ -78,6 +86,8 @@ namespace ConsoleApplication12
             return functionElement;
         }
 
+        // Ziska poziciu elementu vo formate riadok, stlpec reprezentovanu string listom  pre 
+        // aktualny XPathNavigator
         public List<String> findPosition(XPathNavigator navigator)
         {
             String line = navigator.GetAttribute("line", "http://www.sdml.info/srcML/position");
@@ -88,20 +98,20 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Zapise identifikovane pridanie komentara do vystupneho xml suboru
         public void writeActionCommentAdded(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            // Zistujem poziciu if
+            // Zistuje poziciu 
             List<String> list = findPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
-            // Zistujem v ktorej funkcii je to vnorene
+            // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            // Zapisem akciu do xml suboru
+            // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "comment"),
                     new XElement("type", "added"),
@@ -114,20 +124,20 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapise identifikovane zmazanie komentara do vystupneho xml suboru
         public void writeActionCommentRemoved(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            // Zistujem poziciu if
+            // Zistuje poziciu 
             List<String> list = findPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
-            // Zistujem v ktorej funkcii je to vnorene
+            // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            // Zapisem akciu do xml suboru
+            // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "comment"),
                     new XElement("type", "deleted"),
@@ -139,42 +149,8 @@ namespace ConsoleApplication12
             xdoc.Root.Add(my_element);
             xdoc.Save("RecordedActions.xml");
         }
-
-        // Vracia maximum dvoch cisel
-        private int max(int a, int b)
-        {
-            return (a > b) ? a : b;
-        }
-
-        // Longest common subsequence
-        private int LCS(string s1, string s2)
-        {
-            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
-            {
-                return 0;
-            }
-
-            int[,] table = new int[s1.Length + 1, s2.Length + 1];
-
-            for (int i = 0; i <= s1.Length; i++)
-                table[i, 0] = 0;
-            for (int i = 0; i <= s2.Length; i++)
-                table[0, i] = 0;
-
-            for (int i = 1; i <= s1.Length; i++)
-                for (int j = 1; j <= s2.Length; j++)
-                {
-                    if (s1[i - 1] == s2[j - 1])
-                        table[i, j] = table[i - 1, j - 1] + 1;
-                    else
-                    {
-                        table[i, j] = max(table[i - 1, j], table[i, j - 1]);
-                    }
-
-                }
-            return table[s1.Length, s2.Length];
-        }
-
+        
+        /*
         private String prcessXmlFile(String fileName)
         {
             XmlDocument doc1 = new XmlDocument();
@@ -208,8 +184,9 @@ namespace ConsoleApplication12
             temp = temp.Replace("xmlns:diff=\"http://www.via.ecp.fr/~remi/soft/xml/xmldiff\"", "");
             temp = Regex.Replace(temp, @"\s+", "");
             return temp;
-        }
+        }*/
 
+        // Cita subor po riadkocha vracia jeho obsah ako string
         private string readFile(string fileName)
         {
             string fileContent = "";
@@ -226,23 +203,57 @@ namespace ConsoleApplication12
             return fileContent;
         }
 
+        // vracia textovy obsah bez znaciek z xml elementu
+        private string getTextFromNode(XPathNavigator navigator)
+        {
+            return navigator.TypedValue.ToString();
+        }
+        
+
+        // Najde pridane a vymazane komentare 
         public void findCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
+            // Sluzi na ulozenie vsetkoho zmazaneho kodu 
+            List<string> removedSourceList = new List<string>();
+            
+            // Sluzi na ulozenie v+setkeho pridaneho kodu 
+            List<string> addedSourceList = new List<string>();
+
+            // Najde zmazany kod
+            XPathNodeIterator deletedSource = navigator.Select("//*[@diff:status='removed' and not(descendant-or-self::*[local-name() = 'comment'])]", manager);
+
+            // Najde zmazany kod
+            XPathNodeIterator addedSource = navigator.Select("//*[@diff:status='added' and not(descendant-or-self::*[local-name() = 'comment'])]", manager);
+
+            // Prechadza vsetkymi zmazanymi elementmi a ziskava z nich len textovy obsah bez xml znaciek
+            while (deletedSource.MoveNext())
+            {
+                XPathNavigator deletedElement = deletedSource.Current;
+                String str = getTextFromNode(deletedElement);
+                str = str.Replace("\t", "");
+                str = str.Replace("\n", "");
+                str = str.Replace(" ", "");
+                removedSourceList.Add(str);
+            }
+
+            // Prechadza vsetkymi pridanymi elementmi a ziskava z nich len textovy obsah bez xml znaciek
+            while (addedSource.MoveNext())
+            {
+                XPathNavigator addedElement = addedSource.Current;
+                String str = getTextFromNode(addedElement);
+                str = str.Replace("\t", "");
+                str = str.Replace("\n", "");
+                str = str.Replace(" ", "");
+                addedSourceList.Add(str);
+            }
+
+            // Najde vsetky pridane komentare
             XPathNodeIterator nodesCommentAdded = navigator.Select("//base:comment[@diff:status='added']", manager);
+
+            // Najde vsetky odobrane komentare
             XPathNodeIterator nodesCommentRemoved = navigator.Select("//base:comment[@diff:status='removed']", manager);
-           
-            String firstSource = readFile(fileName1);
-
-            firstSource = firstSource.Replace("\t", "");
-            firstSource = firstSource.Replace("\n", "");
-            firstSource = firstSource.Replace(" ", "");
-
-            String secondSource = readFile(fileName2);
-
-            secondSource = secondSource.Replace("\t", "");
-            secondSource = secondSource.Replace("\n", "");
-            secondSource = secondSource.Replace(" ", "");
-
+            
+            // Prejdi cez vsetky pridane komentare
             while (nodesCommentAdded.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodesCommentAdded.Current;
@@ -256,12 +267,19 @@ namespace ConsoleApplication12
                 temp = temp.Replace("\n", "");
                 temp = temp.Replace(" ", "");
 
-                if(firstSource.Contains(temp))
+                // Ak sa v zmazanom kode nachadza obsah komentara potom identifikuj zakomentovanie casti kodu
+                foreach(String sourceString in removedSourceList)
                 {
-                    writeActionCommentAdded(manager, nodesNavigator);
+                    //if (sourceString == temp)
+                    if(sourceString.Contains(temp))
+                    {
+                        writeActionCommentAdded(manager, nodesNavigator);
+                        break;
+                    }
                 }
             }
 
+            // Prejdi cez vsetky vymazane komentare
             while (nodesCommentRemoved.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodesCommentRemoved.Current;
@@ -276,9 +294,15 @@ namespace ConsoleApplication12
                 temp = temp.Replace("\n", "");
                 temp = temp.Replace(" ", "");
 
-                if (secondSource.Contains(temp))
+                // Ak sa v pridanom kode nachadza obsah komentara potom identifikuj odkomentovanie casti kodu
+                foreach (String sourceString in addedSourceList)
                 {
-                    writeActionCommentRemoved(manager, nodesNavigator);
+                    //if (sourceString == temp)
+                    if(sourceString.Contains(temp))
+                    {
+                        writeActionCommentRemoved(manager, nodesNavigator);
+                        break;
+                    }
                 }
             }
 

@@ -13,6 +13,7 @@ namespace ConsoleApplication12
 {
     class OutputCanceledActivity
     {
+        // Ziskava element s nazvom funkcie v ktorej sa identifikovana aktivita vyskytla
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -21,6 +22,7 @@ namespace ConsoleApplication12
                 navigator.MoveToParent();
             }
 
+            // Ak sa nenasiel element function jedna sa o globalnu premennu
             if (navigator.Name == "unit")
             {
                 return new XElement("global_variable");
@@ -68,6 +70,7 @@ namespace ConsoleApplication12
             return functionElement;
         }
 
+        // Ziskava poziciu (riadok,stlpec)
         public List<String> findPosition(XPathNavigator navigator)
         {
 
@@ -82,6 +85,7 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Zapisuje aktivitu zakomentovanie volania printf do vystupneho xml
         public void writeActionCanceledOutputPrintf(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
@@ -108,6 +112,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapisuje aktivitu zakomentovanie volania putchar do vystupneho xml
         public void writeActionCanceledOutputPutchar(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
@@ -134,6 +139,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Spracovanie zakomentovaneho volania funkcie printf
         private String processCommentNodePrintf(XPathNavigator navigator)
         {
             String comment = navigator.Value;
@@ -144,9 +150,13 @@ namespace ConsoleApplication12
             comment = comment.Substring(index);
             index = comment.IndexOf(");");
             comment = comment.Substring(0, index+1);
+            comment = comment.Replace(" ", "");
+            comment = comment.Replace("\t", "");
+            comment = comment.Replace("\n", "");
             return comment;
         }
 
+        // Spracovanie zakomentovaneho volania putchar
         private String processCommentNodePutchar(XPathNavigator navigator)
         {
             String comment = navigator.Value;
@@ -157,6 +167,9 @@ namespace ConsoleApplication12
             comment = comment.Substring(index);
             index = comment.IndexOf(");");
             comment = comment.Substring(0, index+1);
+            comment = comment.Replace(" ", "");
+            comment = comment.Replace("\t", "");
+            comment = comment.Replace("\n", "");
             return comment;
         }
 
@@ -195,6 +208,7 @@ namespace ConsoleApplication12
             return table[s1.Length, s2.Length];
         }
 
+        // Hlada aktivitu zakomentovanie pomocnych vystupov a zapisuje do vystupneho xml
         public void findCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodesComment = navigator.Select("//base:comment[@diff:status='added']", manager);
@@ -220,30 +234,42 @@ namespace ConsoleApplication12
             while (nodesPrintf.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodesPrintf.Current;
+                String printfContent = nodesNavigator.Value;
+                printfContent = printfContent.Replace(" ", "");
+                printfContent = printfContent.Replace("\t", "");
+                printfContent = printfContent.Replace("\n", "");
                 for(int i =0;i< commentedPrintf.Count;i++)
                 {
-                    int subsequence = LCS(commentedPrintf.ElementAt(i), nodesNavigator.Value);
+                    /*int subsequence = LCS(commentedPrintf.ElementAt(i), nodesNavigator.Value);
                     float similarity = subsequence / (float)((commentedPrintf.ElementAt(i).Length + nodesNavigator.Value.Length) / 2f);
                     
                     if(similarity > 0.85)
                     {
                         writeActionCanceledOutputPrintf(manager, nodesNavigator);
-                    }
+                    }*/
+                    if(commentedPrintf.ElementAt(i)==printfContent)
+                         writeActionCanceledOutputPrintf(manager, nodesNavigator);
                 } 
             }
 
             while (nodesPutchar.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodesPutchar.Current;
+                String putcharContent = nodesNavigator.Value;
+                putcharContent = putcharContent.Replace(" ", "");
+                putcharContent = putcharContent.Replace("\t", "");
+                putcharContent = putcharContent.Replace("\n", "");
                 for (int i = 0; i < commentedPutchar.Count; i++)
                 {
-                    int subsequence = LCS(commentedPutchar.ElementAt(i), nodesNavigator.Value);
+                    /*int subsequence = LCS(commentedPutchar.ElementAt(i), nodesNavigator.Value);
                     float similarity = subsequence / (float)((commentedPutchar.ElementAt(i).Length + nodesNavigator.Value.Length) / 2f);
 
                     if (similarity > 0.85)
                     {
                         writeActionCanceledOutputPutchar(manager, nodesNavigator);
-                    }
+                    }*/
+                    if (commentedPrintf.ElementAt(i) == putcharContent)
+                        writeActionCanceledOutputPutchar(manager, nodesNavigator);
                 }
             }
         }

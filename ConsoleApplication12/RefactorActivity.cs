@@ -15,7 +15,7 @@ namespace ConsoleApplication12
 {
     class RefactorActivity
     {
-        
+        // Ziska element s pridanou funkciu
         private XElement getFunctionAddedNode(XPathNavigator navigator)
         {
             XElement addFuncElement = new XElement("added_function");
@@ -31,6 +31,7 @@ namespace ConsoleApplication12
             return addFuncElement;
         }
 
+        // Ziska element s pridanym volanim funkcie
         private XElement getFunctionCallNode(XPathNavigator navigator)
         {
             XElement callFuncElement = new XElement("call_function");
@@ -46,6 +47,7 @@ namespace ConsoleApplication12
             return callFuncElement;
         }
 
+        // Zapise identifikovany refactoring do vystupneho xml suboru
         public void writeRefactorActivity(XPathNavigator callNavigator, XPathNavigator navigator)
         {
             XElement addFuncElement = getFunctionAddedNode(navigator);
@@ -54,7 +56,6 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "source_code_refactoring"),
                     addFuncElement,
@@ -63,6 +64,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Nacita subor so zaznamenanymi aktivitami vracia XPathNavigator pre dany subor
         private XPathNavigator loadIdentifiedActivities()
         {
             XmlDocument doc = new XmlDocument();
@@ -77,10 +79,12 @@ namespace ConsoleApplication12
             
         }
 
+        // Najde refactoring a zapise danu zmenu do vystupneho xml suboru
         public void findRefactoring()
         {
             XPathNavigator navigator = loadIdentifiedActivities();
 
+            // Najde vsetky pridane funkcie
             XPathNodeIterator nodes = navigator.Select("//action[name='function_added']");
            
             while (nodes.MoveNext())
@@ -89,6 +93,7 @@ namespace ConsoleApplication12
 
                 XPathNavigator nameNavigator = nodesNavigator.SelectSingleNode("function_name");
 
+                // Hlada aktivitu pridanie volania pridanej funkcie
                 XPathNavigator funcCall = navigator.SelectSingleNode("//action[name='function_call' and diff_type='added' and "
                 + "(function_call/function_name/before='" + nameNavigator.Value + "' or function_call/function_name/after='" + nameNavigator.Value + "')]");
                 

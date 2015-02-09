@@ -119,7 +119,12 @@ namespace ConsoleApplication12
         {
             float similarity = -1;
 
-            if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
+            // Zabezpeci aby sa main vzdy mapoval na main
+            if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element
+                && root1.Name == "function" && root2.Name == "function" && root1.ChildNodes[1].InnerText == "main" 
+                && root2.ChildNodes[1].InnerText == "main")
+                similarity = 1;
+            else if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
             {
                 // Ziska podobnost nazvov subelementov
                 float nameSimilarity = computeStringSimilarity(root1.Name, root2.Name);
@@ -463,7 +468,7 @@ namespace ConsoleApplication12
                         // Ak maju oba elementy rovnake id rataj podobnost ich child elementov
                         // pokracuj rekurzivne na nizsie urovne
                         if (idAtrib != null && idAtrib2 != null && String.Compare(idAtrib.Value, idAtrib2.Value) == 0)
-                        {    
+                        {
                             subelementSimilarity(doc1, doc2, listNode, listNode2);
                             if (listNode.HasChildNodes && listNode2.HasChildNodes)
                                 recursiveSimilarity(doc1, doc2, listNode.ChildNodes, listNode2.ChildNodes);
@@ -603,4 +608,4 @@ namespace ConsoleApplication12
 
         }
     }
-}
+} 

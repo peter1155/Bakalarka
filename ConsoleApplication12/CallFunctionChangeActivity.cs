@@ -38,11 +38,15 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Sluzi na ziskanie zoznamu argumentov vo formate String pre volanie funkcie
+        // ktorej atribut id je rovny id v zdrojovom subore s menom fileName
         private String findInSource(String id, String fileName)
         {
+            // Nacitanie obsahu suboru do XmlDocument objektu
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
 
+            // Vytvorenie xPathDokumentu pre dopytovanie
             string xmlcontents = doc.InnerXml;
             XmlReader reader = XmlReader.Create(new StringReader(xmlcontents));
             XPathDocument document_xpath = new XPathDocument(reader);
@@ -56,22 +60,28 @@ namespace ConsoleApplication12
             manager.AddNamespace("type", "http://www.sdml.info/srcML/modifier");
             manager.AddNamespace("pos", "http://www.sdml.info/srcML/position");
 
+            // XpathQuery
             String temp = "//base:call[@id='" + id + "']/base:argument_list/base:argument";
+            
+            // Ziska vsetky argumenty daneho volania funkcie
             XPathNodeIterator nodes = navigator.Select(temp, manager);
             int counter = 0;
             temp = "";
+
+            // Poskladaj vsetky argumenty do jednoho stringu
             while (nodes.MoveNext())
             {
                 if (counter > 0)
                     temp += ",";
                 temp += nodes.Current.Value;
-                /*if (counter == 0)
-                    temp += "~~";*/
                 counter++;
             }
+
+            // Vrat string obsahujuci vsetky argumenty
             return temp;
         }
 
+        // Vracia elment s nazvami funkcie
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -80,6 +90,7 @@ namespace ConsoleApplication12
                 navigator.MoveToParent();
             }
 
+            // Ak sa element function nenasiel jedna sa o chybu v kode
             if (navigator.Name == "unit")
                 return new XElement("errorInSource");
 
@@ -96,6 +107,8 @@ namespace ConsoleApplication12
             // Treba osetrit pripad ze nazov funkcie sa rapidne zmenil a je povazovany za zmazany a pridany
             List<String> funcNames = new List<string>();
             funcNames.Add(funcName);
+
+            // Najdi vsetky nazvy elementu function (pripad ze su tam dve mena jedno removed druhe added)
             while (function_childeren.MoveNext() && function_childeren.Current.Name == "name")
             {
                 funcNames.Add(function_childeren.Current.Value);
@@ -110,21 +123,25 @@ namespace ConsoleApplication12
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
+            // Ak sa nazov funkcie rapidne zmenil treba precitat jedno a potom druhe meno
             else if (funcNames.Count > 1)
             {
                 functionElement = new XElement("function_name",
                     new XElement("before", funcNames.ElementAt(1)),
                     new XElement("after", funcNames.ElementAt(0)));
             }
+            // Ak sa nazov nezmenil pridaj dva krat ten isty nazov
             else
             {
                 functionElement = new XElement("function_name",
                     new XElement("before", funcName),
                     new XElement("after", funcName));
             }
+            // Vrat element function
             return functionElement;
         }
 
+        // Vracia element s nazvami volanej funkcie
         private XElement getFunctionCallNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -133,6 +150,7 @@ namespace ConsoleApplication12
                 navigator.MoveToParent();
             }
 
+            // Ak sa nepodarilo najst element function v kode sa nachadza chyba
             if (navigator.Name == "unit")
                 return new XElement("errorInSource");
 
@@ -163,12 +181,14 @@ namespace ConsoleApplication12
                     new XElement("before", beforeAfterValues[0]),
                     new XElement("after", beforeAfterValues[1]));
             }
+            // Treba osetrit pripad ze nazov funkcie sa rapidne zmenil a je povazovany za zmazany a pridany
             else if (funcNames.Count > 1)
             {
                 functionElement = new XElement("function_name",
                     new XElement("before", funcNames.ElementAt(1)),
                     new XElement("after", funcNames.ElementAt(0)));
             }
+            // Ak sa nazov funkcie nezmenil potom prirad dva krat rovnaky nazov
             else
             {
                 functionElement = new XElement("function_name",
@@ -177,14 +197,17 @@ namespace ConsoleApplication12
             }
             return functionElement;
         }
-
+        
+        // Sluzi na ziskanie zoznamu argumentov prva polozka listu je string 
+        // obsahujuci argumenty pred zmenou a druha polozka je string obsahujuci
+        // argumenty po zmene
         private List<String> manualParse(XPathNavigator navigator)
         {
-            
             String parameters_before = null;
             String parameters_after = null;
             String[] beforeAfterValues = null;
             char[] delimiters = { '~' };
+
             // Select arguments from argument list
             XPathNodeIterator call_children = navigator.SelectChildren(XPathNodeType.Element);
             XPathNavigator call_child = null;
@@ -198,16 +221,17 @@ namespace ConsoleApplication12
                 }
             }
 
+            // Zisak argumenty z argument listu
             XPathNodeIterator arguments = call_child.SelectChildren(XPathNodeType.Element);
 
-            // Prechadzame vsetkymi argumentmi funkcie 
+            
             int in_after_counter = 0;
             int out_after_counter = 0;
 
             int in_before_counter = 0;
             int out_before_counter = 0;
 
-
+            // Prechadzame vsetkymi argumentmi funkcie 
             while (arguments.MoveNext())
             {
                 XPathNodeIterator expresionIterator = arguments.Current.SelectChildren(XPathNodeType.Element);
@@ -217,6 +241,9 @@ namespace ConsoleApplication12
                 in_after_counter = 0;
                 in_before_counter = 0;
 
+                // Prechadza argumentmi na zaklade atributu status pridava argumenty
+                // k predchadzajucim alebo novym zaroven nastavuje pocitadla tak aby
+                // bol zoznam argumentov spravne ociarkany
                 while (parameterIterator.MoveNext())
                 {
                     XPathNavigator parameter = parameterIterator.Current;
@@ -256,11 +283,6 @@ namespace ConsoleApplication12
                         in_before_counter++;
                         parameters_before += tempValue;
                     }
-                    else if (String.Compare(temp, "below") == 0)
-                    {
-
-                        // parmeterObject.type.Add("removed");
-                    }
                     else
                     {
                         if (out_after_counter != 0 && in_after_counter == 0)
@@ -281,12 +303,16 @@ namespace ConsoleApplication12
 
             }
             
+            // Vytvori list ako prvu polozku prida argumenty pred zmenou ako druhu parametre po zmene
             List<String> list = new List<String>();
             list.Add(parameters_before);
             list.Add(parameters_after);
+
+            // Vracia list s argumentami funkcie
             return list;
         }
-
+        
+        // Zapise identifikovanu zmenu volania funkcie do vystupneho xml suboru
         public void writeActionCallModified(XPathNavigator navigator)
         {
 
@@ -308,16 +334,14 @@ namespace ConsoleApplication12
                 tempNavigator2.MoveToParent();
             }
 
+            // Ziska id elementu call
             String id = tempNavigator2.GetAttribute("id", "");
+
+            // Ziska argumenty funkcie
             String parametersBefore = findInSource(id, "source_data1.xml");
             String parametersAfter = findInSource(id, "source_data2.xml");
-            if(String.Compare(id,"") == 0)
-            {
-                var list = manualParse(tempNavigator2.Clone());
-                parametersBefore = list.ElementAt(0);
-                parametersAfter = list.ElementAt(1);
-            }
-            
+
+            // Nastavi modification type podla parametrov
             String modification_type = "";
 
             if (String.Compare(parametersBefore, parametersAfter) != 0)
@@ -346,6 +370,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapise identifikovane pridanie volania funkcie do vystupneho xml
         public void writeActionCallAdded(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
@@ -389,6 +414,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapise identifikovane vymazanie volania funkcie do vystupneho xml
         public void writeActionCallDeleted(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
@@ -409,7 +435,10 @@ namespace ConsoleApplication12
                 tempNavigator2.MoveToParent();
             }
 
+            // Ziska id elementu call
             String id = tempNavigator2.GetAttribute("id", "");
+
+            // Ziska zoznam vstupnych argumentov funkcie
             String parametersBefore;            
             var list = manualParse(tempNavigator2.Clone());
             parametersBefore = list.ElementAt(0);
@@ -433,10 +462,18 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Najde nazvy vsetkych programatorom zadefinovanych funkcii v zdrojovom kode 
+        // Nazvy je potrebne najst pretoze sa budu hladat iba zmeny volani funkcii zadefinovanych
+        // programatorom
         public List<String> getFunctionNames(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             List<String> functionList = new List<string>();
+
+            // Ziska nazvy vsetkych programatorom def. funkcii
             XPathNodeIterator nodes = navigator.Select("//base:function/base:name", manager);
+            
+            // Prechadza zoznamom nazvov a pridava ich do string listu ak doslo k modifikacii nazvu
+            // je potrebne pridat nazov pred aj po modifikacii
             while(nodes.MoveNext())
             {
                 XPathNavigator nameNode = nodes.Current;
@@ -446,7 +483,7 @@ namespace ConsoleApplication12
                 if (temp.Contains("~"))
                 {
                     string[] delimiters = { "~" };
-                    string[] beforeAfterValues = temp.Split(delimiters, StringSplitOptions.None); // Rozsekam zmenu na casti
+                    string[] beforeAfterValues = temp.Split(delimiters, StringSplitOptions.None); // Rozseka zmenu na casti
                     functionList.Add(beforeAfterValues[0]);
                     functionList.Add(beforeAfterValues[1]);
                 }
@@ -457,8 +494,10 @@ namespace ConsoleApplication12
             return functionList;
         }
         
+        // Sluzi na identifikaciu zmien vo volaniach funkcii
         public void findChangedFunctionCalls(XmlNamespaceManager manager, XPathNavigator navigator)
         {
+            // Ziskaj nazvy programatorom zadefinovanych funkcii
             List<String> functionList = getFunctionNames(manager, navigator);
            
             // Najskor identifikujeme modifikovane volania funkcii
@@ -467,6 +506,8 @@ namespace ConsoleApplication12
                 + " | //base:call[@similarity!='1']/base:name", manager);
             List<XPathNavigator> modifiedCalls =  new List<XPathNavigator>();
 
+            // Prechadza zoznamom a zistuje ci modifikovane volanie funkcie
+            // bolo vykonane na funkcii zadefinovanej programatorom
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
@@ -481,6 +522,7 @@ namespace ConsoleApplication12
                 }
             }
 
+            // Zapis zmenu do vystupneho XML
             for(int i=0;i<modifiedCalls.Count;i++)
             {
                 writeActionCallModified(modifiedCalls.ElementAt(i));
@@ -490,6 +532,8 @@ namespace ConsoleApplication12
             nodes = navigator.Select("//base:call[@diff:status='added']/base:name", manager);
             modifiedCalls = new List<XPathNavigator>();
 
+            // Prechadza zoznamom a zistuje ci pridane volanie funkcie
+            // bolo vykonane na funkcii zadefinovanej programatorom
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
@@ -504,6 +548,7 @@ namespace ConsoleApplication12
                 }
             }
 
+            // Zapis zmenu do vystupneho XML
             for (int i = 0; i < modifiedCalls.Count; i++)
             {
                 writeActionCallAdded(modifiedCalls.ElementAt(i));
@@ -513,6 +558,8 @@ namespace ConsoleApplication12
             nodes = navigator.Select("//base:call[@diff:status='removed']/base:name", manager);
             modifiedCalls = new List<XPathNavigator>();
 
+            // Prechadza zoznamom a zistuje ci vymazane volanie funkcie
+            // bolo vykonane na funkcii zadefinovanej programatorom
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
@@ -527,6 +574,7 @@ namespace ConsoleApplication12
                 }
             }
 
+            // Zapis zmenu do vystupneho XML
             for (int i = 0; i < modifiedCalls.Count; i++)
             {
                 writeActionCallDeleted(modifiedCalls.ElementAt(i));

@@ -14,6 +14,8 @@ namespace ConsoleApplication12
 {
     class SpecialCaseActivity
     {
+        // Vracia typ specialnej aktivity v zavislosti od toho ktory z prikazov
+        // break, continue, return bol pridany do kodu
         public String specialCaseType(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodes = null; 
@@ -29,6 +31,7 @@ namespace ConsoleApplication12
             return null;
         }
 
+        // Ziskava nazov funkcie v ktorej je vnorena dana aktivita
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -82,6 +85,7 @@ namespace ConsoleApplication12
             return functionElement;
         }
 
+        // Vracia element mena konstanty voci ktorej prebehlo porovnanie
         private XElement getConstantNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -132,6 +136,7 @@ namespace ConsoleApplication12
             return functionElement;
         }
         
+        // Hlada poziciu elementu s nazvom elementName
         public List<String> findPosition(String elementName,XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
@@ -147,6 +152,8 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Zapis identifikovanej aktivity pridanie jedneho z prikazov break, return, continue
+        // do tela then vetvy
         public void writeActionSpecialCaseThen(XmlNamespaceManager manager,XPathNavigator navigator)
         {
             // Zistujem o ktory specialny pripad sa jedna
@@ -163,7 +170,6 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "special_case"),
                     new XElement("branch", "then"),
@@ -176,6 +182,8 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapis identifikovanej aktivity pridanie jedneho z prikazov break, return, continue
+        // do tela else vetvy
         public void writeActionSpecialCaseElse(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem o ktory specialny pripad sa jedna
@@ -192,7 +200,6 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "special_case"),
                     new XElement("branch", "else"),
@@ -205,6 +212,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Zapis identifikovanej aktivity porovnanie voci konstante
         public void writeActionSpecialCaseConst(XmlNamespaceManager manager, XPathNavigator navigator, List<String> listConstant)
         {
             // Zistujem o ktory specialny pripad sa jedna
@@ -223,7 +231,6 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "special_case"),
                     new XElement("type", "constant_comparison"),
@@ -239,6 +246,7 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Najdenie hodnoty zadefinovanej konstanty
         private String findInSource(String fileName, String name)
         {
             XmlDocument doc = new XmlDocument();
@@ -265,6 +273,7 @@ namespace ConsoleApplication12
                 return nodes.Current.Value;
         }
        
+        // Vracia list vsetkych zadefinovanych konstant v programe
         private List<String> findDefinedConstants(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodes = navigator.Select("//cpp:macro[not(base:parameter_list)]/base:name", manager);
@@ -306,8 +315,11 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Identifikuje aktivity pridanie specialneho pripadu (pridanie continue,break,return do tela if/else
+        // alebo pridanie porovnania voci zadefinovanej konstante v podmienke if/else) a zapise do vystupneho xml
         public void findSpecialCaseAdd(XmlNamespaceManager manager, XPathNavigator navigator)
         { 
+            // Najdenie pridania jedneho zo specialnych prikazov do then vetvy
             XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status]/base:then/base:block[base:return[@diff:status='added']" +
                 " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:if[@diff:status]/base:then[base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
                 " base:break[@diff:status='added']]", manager);
@@ -318,6 +330,7 @@ namespace ConsoleApplication12
                 writeActionSpecialCaseThen(manager,nodesNavigator);
             }
 
+            // Najdenie pridania jedneho zo specialnych prikazov do else vetvy
             nodes = navigator.Select("//base:else[@diff:status]/base:block[base:return[@diff:status='added']" +
                " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:else[@diff:status and ( base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
                " base:break[@diff:status='added'])]", manager);
@@ -336,6 +349,7 @@ namespace ConsoleApplication12
                     xpathQuery += "or base:name='" + definedConstants.ElementAt(i) + "' ";
                 xpathQuery += "]/base:name[@diff:status='added' or @diff:status='modified']";
 
+                // Najdenie porovnani voci zadefinovanej konstante
                 nodes = navigator.Select(xpathQuery, manager);
                 while(nodes.MoveNext())
                 {

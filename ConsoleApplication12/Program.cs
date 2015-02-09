@@ -28,37 +28,126 @@ namespace ConsoleApplication12
             doc.Save("RecordedActions.xml");
         }
 
+        // Sluzi na vymazanie XML elementu, tak aby ostali zachovany jeho potomkovia
+        private static void removeBlocks(XmlNode parent, XmlNode childToRemove)
+        {
+            while (childToRemove.HasChildNodes)
+                parent.InsertBefore(childToRemove.ChildNodes[0], childToRemove);
+
+            parent.RemoveChild(childToRemove);
+        }
+
+        // Rekurzivne prechadza cele XML a vymazava block elementy
+        private static void recursiveXmlPreProcessing(XmlNodeList list1, XmlDocument doc)
+        {
+            foreach (XmlNode listNode in list1)
+            {
+                /*if(listNode.Name == "do" || listNode.Name == "while" || listNode.Name == "for")
+                {
+                    XmlAttribute nameAtrib = doc.CreateAttribute("cycle_type");
+                    nameAtrib.Value = listNode.Name;
+
+                    XmlNode parentNode = listNode.ParentNode;
+                    XmlNode tempNode = doc.CreateElement("cycle", "http://www.sdml.info/srcML/src");
+                    tempNode.InnerXml = listNode.InnerXml;
+                    // Kopiruje atributy
+                    while(listNode.Attributes.Count > 0)
+                        tempNode.Attributes.Append(listNode.Attributes[0]);
+                    tempNode.Attributes.Append(nameAtrib);
+                    parentNode.InsertBefore(tempNode, listNode);
+                    parentNode.RemoveChild(listNode);
+                    recursiveXmlPreProcessing(parentNode.ChildNodes,doc);
+
+                }*/
+                if(listNode.Name == "block")
+                {
+                    XmlNode parent = listNode.ParentNode;
+                    removeBlocks(parent, listNode);
+                    if (parent.HasChildNodes)
+                        recursiveXmlPreProcessing(parent.ChildNodes,doc);
+                }
+                else if (listNode.HasChildNodes)
+                    recursiveXmlPreProcessing(listNode.ChildNodes,doc);
+            }
+        }
+
+        // Vymaze block elementy z xml suboru s nazvom fileName
+        // zaroven zmeni elementy fro, do, while na cycle a typ cyklu sa ulozi do atributu
+        private static void xmlPreProcessing(String fileName)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fileName);
+            recursiveXmlPreProcessing(doc.ChildNodes,doc);
+            doc.Save(fileName);
+        }
+        
+        // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
+        private static void xmlPostIndexingProcessing(String fileName)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fileName);
+            xmlRecursivePostIndexingProcessing(doc.ChildNodes, doc);
+            doc.Save(fileName);
+        }
+
+        // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
+        private static void xmlRecursivePostIndexingProcessing(XmlNodeList list1, XmlDocument doc)
+        {
+            foreach (XmlNode listNode in list1)
+            {
+                if(listNode.Name == "cycle")
+                {
+                    XmlNode typeAtrib = listNode.Attributes.GetNamedItem("cycle_type","");
+
+                    XmlNode parentNode = listNode.ParentNode;
+                    String temp = typeAtrib.Value.Replace("~", "_");
+                    XmlNode tempNode = doc.CreateElement(temp, "http://www.sdml.info/srcML/src");
+                    tempNode.InnerXml = listNode.InnerXml;
+                    // Kopiruje atributy
+                    while(listNode.Attributes.Count > 0)
+                        tempNode.Attributes.Append(listNode.Attributes[0]);
+                    
+                    parentNode.InsertBefore(tempNode, listNode);
+                    parentNode.RemoveChild(listNode);
+                    xmlRecursivePostIndexingProcessing(parentNode.ChildNodes, doc);
+                }
+                else if (listNode.HasChildNodes)
+                    xmlRecursivePostIndexingProcessing(listNode.ChildNodes, doc);
+            }
+        }
+
+
         static void Main(string[] args)
         {
             // Ziskava instanciu triedy Src2SrcMLRunner na preklad zdrojoveho kodu do xml
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
 
             // Prehadza vsetkymi subormi pre danu ulohu a identifikuje vybrane cinnosti
-            for (int student = 2; student < 3; student++)
+            for (int student = 1; student < 60; student++)
             {
-                for (int pokus = 6; pokus < 7; pokus++)
+                for (int pokus = 0; pokus < 30; pokus++)
                 {
                     Boolean fileExist = true;
-                    
+
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName1 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\"+student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
-                    if (!File.Exists(fileName1+".c"))
+                    String fileName1 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
+                    if (!File.Exists(fileName1 + ".c"))
                         fileExist = false;
 
                     // Ak subor neexituje prejde na dalsieho studenta
                     if (!fileExist)
                         break;
-                    
+
                     fileExist = true;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus+1).ToString("D2") + "_" + "wrong";
+                    String fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "wrong";
                     if (!File.Exists(fileName2 + ".c"))
                         fileExist = false;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
                     if (!fileExist)
-                        fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus+1).ToString("D2") + "_" + "correct";
+                        fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "correct";
 
                     fileExist = true;
                     if (!File.Exists(fileName2 + ".c"))
@@ -67,16 +156,16 @@ namespace ConsoleApplication12
                     // Ak neexistuje ani jeden zo suborov prejde na dalsieho studenta
                     if (!fileExist)
                         break;
-                    
+
                     // Time messurement
                     DateTime start = DateTime.Now;
 
                     //////////////////////////////////////////// SrcToSrcML preklad ////////////////////////////////////////////////////
 
                     // Prelozi subori so zdrojovym kodom do formatu xml 
-                    my_runner.GenerateSrcMLFromFile(fileName1+".c",
+                    my_runner.GenerateSrcMLFromFile(fileName1 + ".c",
                             "source_data1.xml", ABB.SrcML.Language.C);
-                    my_runner.GenerateSrcMLFromFile(fileName2+".c",
+                    my_runner.GenerateSrcMLFromFile(fileName2 + ".c",
                          "source_data2.xml", ABB.SrcML.Language.C);
 
                     //////////////////////////////////////////// SrcToSrcML preklad ////////////////////////////////////////////////////
@@ -86,6 +175,9 @@ namespace ConsoleApplication12
                             "source_data1.xml", ABB.SrcML.Language.C);
                     my_runner.GenerateSrcMLFromFile("source_code2.c",
                          "source_data2.xml", ABB.SrcML.Language.C);*/
+
+                    xmlPreProcessing("source_data1.xml");
+                    xmlPreProcessing("source_data2.xml");
 
                     // Pre potreby xml-diffu vymaze z atributov line a column prefix pos v subore source_data1.xml
                     XDocument document = XDocument.Load("source_data1.xml");
@@ -111,7 +203,7 @@ namespace ConsoleApplication12
                     indexing.xmlIndexing("source_data1.xml", "source_data2.xml");
 
                     ///////////////////////////////////////// Indexing elements end ///////////////////////////////
-                  
+
 
                     ///////////////////////////////////////// XML Differencing ////////////////////////////////////
 
@@ -120,7 +212,7 @@ namespace ConsoleApplication12
                     // Ako separator je pouzita tilda ta by sa v kode nemala vyskytnut resp. minimalne, diffuje sa podla ids vypocitanych
                     // v similarityBasedIndexing classe, ignoruju sa cisla riadkov a stlpcov a zaroven similarity atribut
                     string parameteres = " diff --ids @id --ignore @line,@column,@similarity,@temp_id --sep ~ source_data1.xml source_data2.xml difference.xml";
-                    
+
                     Process p = new Process();
                     p.StartInfo.FileName = filename;
                     p.StartInfo.Arguments = parameteres;
@@ -129,10 +221,12 @@ namespace ConsoleApplication12
 
                     ////////////////////////////////////////// XML Differencing /////////////////////////////////////
 
+                    //xmlPostIndexingProcessing("difference.xml");
+
                     // Nacitanie vytvoreneho xml suboru
                     XmlDocument doc = new XmlDocument();
-                    doc.Load("difference.xml");             
-                   
+                    doc.Load("difference.xml");
+
                     // Vytvorenie suboru na zapis identifikovanych zmien
                     createXMLDoc();
 
@@ -140,7 +234,10 @@ namespace ConsoleApplication12
                     string xmlcontents = doc.InnerXml;
                     xmlcontents = xmlcontents.Replace("line", "pos:line");
                     xmlcontents = xmlcontents.Replace("column", "pos:column");
-                    
+                    doc.LoadXml(xmlcontents);
+                    doc.Save("difference.xml");
+
+
                     // Vytvorenie xPathNavigatora pre dopytovanie diffDocumentu
                     XmlReader reader = XmlReader.Create(new StringReader(xmlcontents));
                     XPathDocument document_xpath = new XPathDocument(reader);
@@ -155,7 +252,7 @@ namespace ConsoleApplication12
                     manager.AddNamespace("type", "http://www.sdml.info/srcML/modifier");
                     manager.AddNamespace("pos", "http://www.sdml.info/srcML/position");
                     manager.AddNamespace("diff", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
-                    
+
                     // Hlada zmeny v outpute
                     OutputChangeActivity outputActivity = new OutputChangeActivity();
                     outputActivity.findDifferenceInOutput(manager, navigator);
@@ -197,7 +294,7 @@ namespace ConsoleApplication12
                     outputCanceledActivity.findCanaceledOutput(manager, navigator);
 
                     // Hlada zakomentovane a odkomentovane casti kodu
-                    CommentActivity commentActivity = new CommentActivity(fileName1,fileName2);
+                    CommentActivity commentActivity = new CommentActivity(fileName1, fileName2);
                     commentActivity.findCanaceledOutput(manager, navigator);
 
                     // Hlada refctoring kodu
@@ -215,9 +312,8 @@ namespace ConsoleApplication12
                     Console.WriteLine(timeItTook);
 
                     // Prekopirovanie suboru so zaznamenanymi cinnostami do prislusneho priecinka
-                    File.Copy("RecordedActions.xml", fileName2+".xml");
+                    File.Copy("RecordedActions.xml", fileName2 + ".xml");
                     Console.WriteLine("Subor: " + fileName2 + " spracovany");
-
                 }
             }
             Console.ReadKey();

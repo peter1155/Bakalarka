@@ -14,6 +14,7 @@ namespace ConsoleApplication12
 {
     class LoopChangeActivity
     {
+        // Ziska nazov funkcie v ktorej to je vnorene
         private XElement getFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
@@ -22,6 +23,7 @@ namespace ConsoleApplication12
                 navigator.MoveToParent();
             }
 
+            // V pripade ze sa nenajde element function jena sa o chybu v kode
             if (navigator.Name == "unit")
                 return new XElement("errorInSource");
 
@@ -67,6 +69,7 @@ namespace ConsoleApplication12
             return functionElement;
         }
 
+        // Najde poziciu elementu elementName 
         public List<String> findPosition(String elementName, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
@@ -82,6 +85,7 @@ namespace ConsoleApplication12
             return list;
         }
 
+        // Najde podmienku pred zmenou a po zmene
         private List<String> getConditionBeforeAfter(XmlNamespaceManager manager, XPathNavigator navigator, String elementName)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
@@ -90,12 +94,18 @@ namespace ConsoleApplication12
             }
 
             String id = navigator.GetAttribute("id", "");
+
+            // Ziska podmienku pred zmenou
             String conditionBefore = findInSource("source_data1.xml", id, manager,elementName);
+
+            // Ziska podmienku po zmene
             String conditionAfter = findInSource("source_data2.xml", id, manager,elementName);
+            
             // Mazem otvaraciu a zatvaraciu zatvorku
             conditionBefore = conditionBefore.Substring(1, conditionBefore.Length - 2);
             conditionAfter = conditionAfter.Substring(1, conditionAfter.Length - 2);
 
+            // Vracia podmienky ako string list
             List<String> list = new List<string>();
             list.Add(conditionBefore);
             list.Add(conditionAfter);
@@ -103,12 +113,8 @@ namespace ConsoleApplication12
             return list;
         }
 
-        private String getParent(XPathNavigator navigator)
-        {
-            navigator.MoveToParent();
-            return navigator.Name;
-        }
-
+        // Vracia podmienku v cykle ktorej rodicovsky element ma nazov elementName a id = id
+        // zo suboru s nazvom fileName ako string
         private String findInSource(String fileName, String id, XmlNamespaceManager manager, String elementName)
         {
             XmlDocument doc = new XmlDocument();
@@ -123,27 +129,43 @@ namespace ConsoleApplication12
             nodes.MoveNext();
             return nodes.Current.Value;
         }
+        
+        // Dostane string a vymaze z neho whitespaces
+        private String removeWhiteSpaces(String str)
+        {
+            str = str.Replace(" ", "");
+            str = str.Replace("\t", "");
+            str = str.Replace("\n", "");
+            return str;
+        }
 
+        // Zapis zmenu v podmienke cyklu do vystupneho XML
         public void writeActionLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             String parent = navigator.Name;//= getParent(navigator.Clone());
-            // Zistujem poziciu if
+            // Zistuje poziciu
             List<String> list = findPosition(parent, navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
-            // Zistujem podmienku pred zmenou a po zmene 
+            // Zistuje podmienku pred zmenou a po zmene 
             list = getConditionBeforeAfter(manager, navigator.Clone(),parent);
             String conditionBefore = list.ElementAt(0);
             String conditionAfter = list.ElementAt(1);
 
-            // Zistujem v ktorej funkcii je to vnorene
+            String tempCondBefore = conditionBefore;
+            tempCondBefore = removeWhiteSpaces(tempCondBefore);
+            String tempCondAfter = conditionAfter;
+            tempCondAfter = removeWhiteSpaces(tempCondAfter);
+            if (tempCondAfter == tempCondBefore)
+                return;
+
+            // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            // Zapisem akciu do xml suboru
+            // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "loop_condition_change"),
                     new XElement("type", parent),
@@ -158,25 +180,23 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
-        // Specialne pre for cyklus lebo ma trocha ine elementy
+        // Zapis zmeny pre for cyklus, ktory ma ine elementy
         public void writeActionLoopChangeFor(XmlNamespaceManager manager, XPathNavigator navigator)
         {
-            //String parent = getParent(navigator.Clone());
-            // Zistujem poziciu if
+            // Zistuje poziciu 
             List<String> list = findPosition("for", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
-            // Zistujem podmienku pred zmenou a po zmene 
+            // Zistuje podmienku pred zmenou a po zmene 
             XElement control = getConditionBeforeAfterFor(manager, navigator.Clone());
             
-            // Zistujem v ktorej funkcii je to vnorene
+            // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
-            // Zapisem akciu do xml suboru
+            // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
-            // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "loop_condition_change"),
                     new XElement("type", "for"),
@@ -189,6 +209,8 @@ namespace ConsoleApplication12
             xdoc.Save("RecordedActions.xml");
         }
 
+        // Vracia element s podmienkou pred zmenou a po zmene specialne pre for cyklus ktoreho
+        // riadiaca cast pozostava z troch elementov: init, incr, condition
         private XElement getConditionBeforeAfterFor(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, "for") != 0)
@@ -220,6 +242,8 @@ namespace ConsoleApplication12
             return control;
         }
 
+        // Vracia obsah jednotlivych elementov kontrolnej casti for cyklu ako string 
+        // podla nazvu elementName a idecka for cyklu
         private String findInSourceFor(String fileName, String id, XmlNamespaceManager manager,String elementName)
         {
             XmlDocument doc = new XmlDocument();
@@ -235,8 +259,10 @@ namespace ConsoleApplication12
             return nodes.Current.Value;
         }
 
+        // Hlada a zapisuje zmeny v riadiacej casti cyklov for, do , while
         public void findLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
+            // Identifikacia zmien v riadiacej casti while a do while cyklov
             XPathNodeIterator nodes = navigator.Select("//base:while[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
                 + " | //base:do[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
                 + " | //base:do[base:condition[@similarity!='1']] | //base:while[base:condition[@similarity!='1']]", manager);
@@ -247,6 +273,7 @@ namespace ConsoleApplication12
                 writeActionLoopChange(manager, nodesNavigator);
             }
 
+            // Identifikacia zmien v riadiacej casti for cyklu
             nodes = navigator.Select("//base:for[(@diff:status='below' or @diff:status='modified') and"
             + " (base:init/@diff:status or base:incr/@diff:status or base:condition/@diff:status)]"
             + " | //base:for[base:init[@similarity!='1']]  | //base:for[base:incr[@similarity!='1']]"
