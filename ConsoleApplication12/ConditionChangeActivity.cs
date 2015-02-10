@@ -262,10 +262,11 @@ namespace ConsoleApplication12
         public void findConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Sluzi na pridavanie idecok else vetiev
+            
             elseAddedIds = new List<String>();
 
             XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status='below' and base:condition[@diff:status]]"
-                + " | //base:if[base:condition[@similarity!='1']]", manager);
+                + " | //base:if[@diff:status='below' and base:condition[@similarity!='1']]", manager);
 
             while (nodes.MoveNext())
             {

@@ -70,6 +70,7 @@
     <Compile Include="SimilarityBasedIndexing.cs" />
     <Compile Include="SpecialCaseActivity.cs" />
     <Compile Include="VariableDeclarationActivity.cs" />
+    <Compile Include="XmlDiff.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

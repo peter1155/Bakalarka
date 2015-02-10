@@ -105,6 +105,14 @@ namespace ConsoleApplication12
             return temp;
         }
 
+        private String removeWhitespace(String str)
+        {
+            str = str.Replace(" ", "");
+            str = str.Replace("\t", "");
+            str = str.Replace("\n", "");
+            return str;
+        }
+
         // Zapis identifikovanu zmenu funkcie printf do vystupneho xml suboru
         public void writeActionPrint(XPathNavigator navigator)
         {
@@ -174,7 +182,14 @@ namespace ConsoleApplication12
                 type = "parameter";
             }
 
-            
+            String tempParametersBefore = parametersBefore;
+            String tempParametersAfter = parametersAfter;
+
+            tempParametersAfter = removeWhitespace(tempParametersAfter);
+            tempParametersBefore = removeWhitespace(tempParametersBefore);
+
+            if (literalBefore == literalAfter && tempParametersBefore == tempParametersAfter)
+                return;
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");

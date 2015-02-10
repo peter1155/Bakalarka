@@ -418,10 +418,14 @@ namespace ConsoleApplication12
             
             // Typ pola
             List<String> types = getTypeExpression(manager, navigator.Clone(),functionElement);
-            
+
+            // Ak v skutocnosti nedoslo k zmene indexovania tak konci
+            if (names.ElementAt(0) == names.ElementAt(1))
+                return;
+
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
-
+         
             // Vytvori novy XElement a zapise ho do vystupneho xml
             XElement my_element = new XElement("action",
                     new XElement("name", "array_indexing"),

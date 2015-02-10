@@ -321,7 +321,7 @@ namespace ConsoleApplication12
         { 
             // Najdenie pridania jedneho zo specialnych prikazov do then vetvy
             XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status]/base:then/base:block[base:return[@diff:status='added']" +
-                " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:if[@diff:status]/base:then[base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
+                " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:function[not(@diff:status='added')]//base:if[@diff:status]/base:then[base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
                 " base:break[@diff:status='added']]", manager);
             
             while (nodes.MoveNext())
@@ -332,7 +332,7 @@ namespace ConsoleApplication12
 
             // Najdenie pridania jedneho zo specialnych prikazov do else vetvy
             nodes = navigator.Select("//base:else[@diff:status]/base:block[base:return[@diff:status='added']" +
-               " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:else[@diff:status and ( base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
+               " or base:break[@diff:status='added'] or base:continue[@diff:status='added']] | //base:function[not(@diff:status='added')]//base:else[@diff:status and ( base:return[@diff:status='added'] or base:continue[@diff:status='added'] or " +
                " base:break[@diff:status='added'])]", manager);
 
             while (nodes.MoveNext())

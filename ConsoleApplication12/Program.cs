@@ -207,7 +207,7 @@ namespace ConsoleApplication12
 
                     ///////////////////////////////////////// XML Differencing ////////////////////////////////////
 
-                    string filename = "libxmldiff_new\\xmldiff";
+                    /*string filename = "libxmldiff_new\\xmldiff";
 
                     // Ako separator je pouzita tilda ta by sa v kode nemala vyskytnut resp. minimalne, diffuje sa podla ids vypocitanych
                     // v similarityBasedIndexing classe, ignoruju sa cisla riadkov a stlpcov a zaroven similarity atribut
@@ -217,7 +217,10 @@ namespace ConsoleApplication12
                     p.StartInfo.FileName = filename;
                     p.StartInfo.Arguments = parameteres;
                     p.Start();
-                    p.WaitForExit();
+                    p.WaitForExit();*/
+
+                    XMLDiff myDiffer = new XMLDiff();
+                    myDiffer.diffXmlFiles("source_data1.xml", "source_data2.xml");
 
                     ////////////////////////////////////////// XML Differencing /////////////////////////////////////
 

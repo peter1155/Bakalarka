@@ -341,6 +341,9 @@ namespace ConsoleApplication12
             String parametersBefore = findInSource(id, "source_data1.xml");
             String parametersAfter = findInSource(id, "source_data2.xml");
 
+            if (parametersBefore == parametersAfter)
+                return;
+
             // Nastavi modification type podla parametrov
             String modification_type = "";
 
@@ -529,7 +532,8 @@ namespace ConsoleApplication12
             }
 
             // Teraz to iste pre pridane volania
-            nodes = navigator.Select("//base:call[@diff:status='added']/base:name", manager);
+
+            nodes = navigator.Select("//base:function[not(@diff:status='added')]//base:call[@diff:status='added']/base:name", manager);
             modifiedCalls = new List<XPathNavigator>();
 
             // Prechadza zoznamom a zistuje ci pridane volanie funkcie
@@ -555,7 +559,7 @@ namespace ConsoleApplication12
             }
 
             // Teraz to iste pre vymazane volania
-            nodes = navigator.Select("//base:call[@diff:status='removed']/base:name", manager);
+            nodes = navigator.Select("//base:function[not(@diff:status='removed')]//base:call[@diff:status='removed']/base:name", manager);
             modifiedCalls = new List<XPathNavigator>();
 
             // Prechadza zoznamom a zistuje ci vymazane volanie funkcie

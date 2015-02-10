@@ -158,9 +158,12 @@ namespace ConsoleApplication12
             return list;
         }
         
-        private String removeWhitespace()
+        private String removeWhitespace(String str)
         {
-
+            str = str.Replace(" ", "");
+            str = str.Replace("\t", "");
+            str = str.Replace("\n", "");
+            return str;
         }
 
         public void writeActionScan(XPathNavigator navigator)
@@ -202,11 +205,8 @@ namespace ConsoleApplication12
                 
                 parametersBefore = list.ElementAt(0);
                 parametersAfter = list.ElementAt(1);
-                String tempParametersBefore = parametersBefore;
-                String tempParametersAfter = parametersAfter;
-
-
-
+               
+                
                 string[] delimiters = { "~~" };
 
                 // Ziskavame hodnotu vstupnych atr. pred zmenou
@@ -299,6 +299,16 @@ namespace ConsoleApplication12
                     new XElement("after", funcName));
             }
 
+
+            String tempParametersBefore = parametersBefore;
+            String tempParametersAfter = parametersAfter;
+
+            tempParametersAfter = removeWhitespace(tempParametersAfter);
+            tempParametersBefore = removeWhitespace(tempParametersBefore);
+
+            if (literalBefore == literalAfter && tempParametersBefore == tempParametersAfter)
+                return;
+            
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
             

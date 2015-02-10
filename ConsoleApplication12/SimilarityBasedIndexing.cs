@@ -563,6 +563,185 @@ namespace ConsoleApplication12
                 }
         }
 
+        // Vyselektuje vsetky funkcie pre tie ktore sa na seba namapovali vykona all to all podobnost subelementov ktore 
+        // doposial nemaju index
+        private void AllNotIndexedSimilarity(XmlDocument doc1, XmlDocument doc2)
+        {
+            // Vytvara manager pre selektovanie funkcii
+            XmlTextReader reader = new XmlTextReader("source_data1.xml");
+            XmlNamespaceManager nsmanager1 = new XmlNamespaceManager(reader.NameTable);
+            nsmanager1.AddNamespace("base", "http://www.sdml.info/srcML/src");
+
+            XmlNodeList functionsList1 = doc1.SelectNodes("//base:function", nsmanager1);
+
+            reader = new XmlTextReader("source_data2.xml");
+            XmlNamespaceManager nsmanager2 = new XmlNamespaceManager(reader.NameTable);
+            nsmanager2.AddNamespace("base", "http://www.sdml.info/srcML/src");
+
+            XmlNodeList functionsList2 =  doc2.SelectNodes("//base:function",nsmanager2);
+            foreach(XmlNode list1Node in functionsList1)
+                foreach (XmlNode list2Node in functionsList2)
+                {
+                    XmlNode id1 = list1Node.Attributes.GetNamedItem("id", "");
+                    XmlNode id2 = list2Node.Attributes.GetNamedItem("id", "");
+                    if (id1 != null && id2 != null && id1.Value == id2.Value)
+                    {
+                        List<XmlNode> list1 = new List<XmlNode>();
+                        List<XmlNode> list2 = new List<XmlNode>();
+                        getNotIndexedNodes(list1Node.ChildNodes, list1);
+                        getNotIndexedNodes(list2Node.ChildNodes, list2);
+                        AllToAllSimilarity(doc1, doc2, list1, list2);
+                    }
+                }
+        }
+
+        // Priradi idecka elementom pre ktore sa nenaslo parovanie
+        private void getNotIndexedNodes(XmlNodeList list1, List<XmlNode> list2)
+        {
+            foreach (XmlNode listNode in list1)
+                if (listNode.NodeType == XmlNodeType.Element)
+                {
+                    var idAtrib = listNode.Attributes.GetNamedItem("id");
+
+                    // Ak dany element nema id prirad mu ho
+                    if (idAtrib == null)
+                    {
+                        list2.Add(listNode);
+                    }
+
+                    // Pokracuj rekurzivne na deti elementu pokial nejake ma
+                    if (listNode.HasChildNodes)
+                        getNotIndexedNodes(listNode.ChildNodes,list2);
+                }
+        }
+
+        /*private void computeSimilarityForNotIndexed(XmlDocument doc1, XmlDocument doc2)
+        {
+            List<XmlNode> list1 = new List<XmlNode>();
+            List<XmlNode> list2 = new List<XmlNode>();
+            getNotIndexedNodes(doc1.ChildNodes, list1);
+            getNotIndexedNodes(doc2.ChildNodes, list2);
+
+            AllToAllSimilarity(doc1, doc2, list1, list2);
+
+        }*/
+
+        // Tu sa vypočítava all to all matching subelementov bud sa nájde hashovaním alebo sa volá
+        // compute similarity
+        private void AllToAllSimilarity(XmlDocument doc1, XmlDocument doc2, List<XmlNode> list1, List<XmlNode> list2)
+        {
+            //XmlNodeList list1 = root1.ChildNodes;
+            //XmlNodeList list2 = root2.ChildNodes;
+
+            // Do matice sa ukladaju hodnoty podobnosti subelementov
+            float[,] matrix = new float[list1.Count, list2.Count];
+
+            // Hesovanim najdeme v rychlom case elementy, ktore su zhodne
+            Dictionary<int, XmlNode> map = new Dictionary<int, XmlNode>();
+            bool hashing = true;
+
+            foreach (XmlNode node in list1)
+            {
+                XmlNode tempNode;
+
+                if (!map.TryGetValue((node.Name + node.InnerText).GetHashCode(), out tempNode))
+                {
+                    map.Add((node.Name + node.InnerText).GetHashCode(), node);
+                }
+                else
+                {
+                    // V pripade ze sa tam nachadza dva-krat ten isty element - nemozme hashovat
+                    // napr. pole[i] = 5; pole[i] = 5+7; - pole[i] je tam dva krat a pre druhy vyskyt
+                    // by bolo priradene nespravne id ... 
+                    hashing = false;
+                    break;
+                }
+            }
+
+            // S pouzitim hashovania
+            if (hashing)
+            {
+                for (int j = 0; j < list2.Count; j++)
+                {
+                    XmlNode tempNode;
+
+                    if (map.TryGetValue((list2.ElementAt(j).Name + list2.ElementAt(j).InnerText).GetHashCode(), out tempNode))
+                    {
+                        int i = list1.FindIndex(a => a == tempNode);
+
+                        // Ak sa prvok nachadza v HashTabulke
+
+                        if (i != -1)
+                        {
+
+                            // Ak dana pozicia matice nebola zatial nastavena - nebola nastavena na 1 a
+                            // zaroven nebola nastavena na -1 lebo v prislusnom riadku/stlpci uz bol priradeny index
+
+                            if (matrix[i, j] == 0)
+                            {
+
+                                // Ak sa v hashTabulke nachadza dany element prirad IDecka
+
+                                matrix[i, j] = 1.0f;
+
+                                if (list1.ElementAt(i).NodeType == XmlNodeType.Element && list2.ElementAt(j).NodeType == XmlNodeType.Element)
+                                {
+                                    String similarity = "1";
+
+                                    XmlAttribute attr = doc1.CreateAttribute("id");
+                                    attr.Value = id.ToString();
+
+                                    XmlAttribute attr2 = doc2.CreateAttribute("id");
+                                    attr2.Value = id.ToString();
+
+                                    XmlAttribute similarityAtr = doc1.CreateAttribute("similarity");
+                                    similarityAtr.Value = similarity;
+
+                                    XmlAttribute similarityAtr2 = doc2.CreateAttribute("similarity");
+                                    similarityAtr2.Value = similarity;
+
+                                    list1.ElementAt(i).Attributes.Append(attr);
+                                    list1.ElementAt(i).Attributes.Append(similarityAtr);
+                                    list2.ElementAt(j).Attributes.Append(attr2);
+                                    list2.ElementAt(j).Attributes.Append(similarityAtr2);
+                                    id++;
+                                }
+                            }
+                            else
+
+                                // Ak uz v danom riadku/stlpci je priradeny index prejdi na computeSimilarity
+                                // pretoze sa opat nemoze hashovat
+                                break;
+
+                            // Nastavim ostatne pozicie matice (v riadku a stlpci) na -1 aby som ich nemusel znova prechadzat
+
+                            for (int k = 0; k < list2.Count; k++)
+                            {
+                                if (k != j)
+                                    matrix[i, k] = -1;
+                            }
+                            for (int k = 0; k < list1.Count; k++)
+                            {
+                                if (k != i)
+                                    matrix[k, j] = -1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Pre kazdy zatial nepriradeny prvok matice pocitaj podobnost pomocou funkcie ComputeSimilarity
+            for (int i = 0; i < list1.Count; i++)
+                for (int j = 0; j < list2.Count; j++)
+                {
+                    if (matrix[i, j] == 0)
+                    {
+                        matrix[i, j] = computeSimilarity(doc1, doc2, list1.ElementAt(i), list2.ElementAt(j));
+                    }
+                }
+        }
+
+
         // Priradi indexy podobnym elementom medzi dvoma verziami xml suborov
         public void xmlIndexing(String fileName1, String fileName2)
         {
@@ -592,8 +771,12 @@ namespace ConsoleApplication12
             // Rekurzivne priradzuje id podobnym elementom
             recursiveSimilarity(doc1, doc2, doc1.ChildNodes, doc2.ChildNodes);
 
+            // Pre zvysne nezaindexovane uzly sa pokusa ratat all to all podobnost
+            //computeSimilarityForNotIndexed(doc1, doc2);
+            AllNotIndexedSimilarity(doc1, doc2);
+            
             // Najde rovnake elementy ktorym neboli priradene idecka
-            postIndexing(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
+            //postIndexing(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
 
             // Priradi id elemetom ktore sa na nic nemapuju
             notMatchedIndexing(doc1, node1.ChildNodes);
