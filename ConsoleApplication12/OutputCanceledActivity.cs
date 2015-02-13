@@ -144,9 +144,9 @@ namespace ConsoleApplication12
         {
             String comment = navigator.Value;
             
-            if (!comment.Contains("printf("))
+            if (!comment.Contains("printf"))
                 return null;
-            int index = comment.IndexOf("printf(");
+            int index = comment.IndexOf("printf");
             comment = comment.Substring(index);
             index = comment.IndexOf(");");
             comment = comment.Substring(0, index+1);
@@ -268,7 +268,7 @@ namespace ConsoleApplication12
                     {
                         writeActionCanceledOutputPutchar(manager, nodesNavigator);
                     }*/
-                    if (commentedPrintf.ElementAt(i) == putcharContent)
+                    if (commentedPutchar.ElementAt(i) == putcharContent)
                         writeActionCanceledOutputPutchar(manager, nodesNavigator);
                 }
             }

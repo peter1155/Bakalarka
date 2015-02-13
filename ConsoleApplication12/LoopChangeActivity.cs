@@ -97,9 +97,26 @@ namespace ConsoleApplication12
 
             // Ziska podmienku pred zmenou
             String conditionBefore = findInSource("source_data1.xml", id, manager,elementName);
-
-            // Ziska podmienku po zmene
+             // Ziska podmienku po zmene 
             String conditionAfter = findInSource("source_data2.xml", id, manager,elementName);
+            
+            // Treba osetrit pripad ked sa navzajom namapuju odlisne typy cyklov for-while, for-do,do-while,while-do
+            if (conditionBefore == null)
+            {
+                conditionBefore = findInSourceFor("source_data1.xml", id, manager, "condition");
+                if (conditionBefore == null)
+                {
+                    if (elementName == "while")
+                        conditionBefore = findInSource("source_data1.xml", id, manager, "do");
+                    else
+                        conditionBefore = findInSource("source_data1.xml", id, manager, "while");
+                }
+                else
+                    conditionBefore = " conversion for -> " + elementName + "(" + conditionBefore + ") "; // medzeri zamerne ...
+                if (conditionBefore == null)
+                    return null;
+            }
+            
             
             // Mazem otvaraciu a zatvaraciu zatvorku
             conditionBefore = conditionBefore.Substring(1, conditionBefore.Length - 2);
@@ -127,7 +144,9 @@ namespace ConsoleApplication12
 
             XPathNodeIterator nodes = navigator.Select("//base:" + elementName + "[@id='" + id + "']/base:condition", manager);
             nodes.MoveNext();
-            return nodes.Current.Value;
+            if (nodes.Count > 0)
+                return nodes.Current.Value;
+            else return null;
         }
         
         // Dostane string a vymaze z neho whitespaces
@@ -150,6 +169,9 @@ namespace ConsoleApplication12
 
             // Zistuje podmienku pred zmenou a po zmene 
             list = getConditionBeforeAfter(manager, navigator.Clone(),parent);
+            // Osetrenie pre pripad ze sa navzajom namapuju nespravne elmenty
+            if (list == null)
+                return;
             String conditionBefore = list.ElementAt(0);
             String conditionAfter = list.ElementAt(1);
 
@@ -190,7 +212,11 @@ namespace ConsoleApplication12
 
             // Zistuje podmienku pred zmenou a po zmene 
             XElement control = getConditionBeforeAfterFor(manager, navigator.Clone());
-            
+
+            // Osetrenie pre pripad ze sa navzajom namapuju nespravne elementy napr. podmienka a cyklus
+            if (control == null)
+                return;
+
             // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
@@ -228,6 +254,20 @@ namespace ConsoleApplication12
             String initAfter = findInSourceFor("source_data2.xml", id, manager, "init");
             String incrAfter = findInSourceFor("source_data2.xml", id, manager, "incr");
 
+            // Treba osetrit ze sa nenamapovali na seba rovnake typy cyklov
+            if(conditionBefore == null)
+            {
+                conditionBefore = findInSource("source_data1.xml", id, manager, "while");
+                if (conditionBefore == null)
+                    conditionBefore = findInSource("source_data1.xml", id, manager, "do");
+                else
+                    conditionBefore = "conversion while -> for" + conditionBefore;
+                if (conditionBefore == null)
+                    return null;
+                else
+                    conditionBefore = "conversion do_while -> for" + conditionBefore;
+            }
+
             XElement control = new XElement("control",
                 new XElement("init",
                     new XElement("before",initBefore),
@@ -256,7 +296,10 @@ namespace ConsoleApplication12
 
             XPathNodeIterator nodes = navigator.Select("//base:for[@id='" + id + "']/base:"+elementName, manager);
             nodes.MoveNext();
-            return nodes.Current.Value;
+            if (nodes.Count > 0)
+                return nodes.Current.Value;
+            else
+                return null;
         }
 
         // Hlada a zapisuje zmeny v riadiacej casti cyklov for, do , while
@@ -265,7 +308,8 @@ namespace ConsoleApplication12
             // Identifikacia zmien v riadiacej casti while a do while cyklov
             XPathNodeIterator nodes = navigator.Select("//base:while[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
                 + " | //base:do[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
-                + " | //base:do[base:condition[@similarity!='1']] | //base:while[base:condition[@similarity!='1']]", manager);
+                + " | //base:do[(@diff:status='below' or @diff:status='modified') and base:condition[@similarity!='1']]"
+                + " | //base:while[(@diff:status='below' or @diff:status='modified') and base:condition[@similarity!='1']]", manager);
 
             while (nodes.MoveNext())
             {
@@ -276,8 +320,9 @@ namespace ConsoleApplication12
             // Identifikacia zmien v riadiacej casti for cyklu
             nodes = navigator.Select("//base:for[(@diff:status='below' or @diff:status='modified') and"
             + " (base:init/@diff:status or base:incr/@diff:status or base:condition/@diff:status)]"
-            + " | //base:for[base:init[@similarity!='1']]  | //base:for[base:incr[@similarity!='1']]"
-            + " | //base:for[base:condition[@similarity!='1']]", manager);
+            + " | //base:for[(@diff:status='below' or @diff:status='modified') and base:init[@similarity!='1']]"  
+            + " | //base:for[(@diff:status='below' or @diff:status='modified') and base:incr[@similarity!='1']]"
+            + " | //base:for[(@diff:status='below' or @diff:status='modified') and base:condition[@similarity!='1']]", manager); 
 
             while (nodes.MoveNext())
             {

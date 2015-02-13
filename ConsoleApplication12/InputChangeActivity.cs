@@ -332,7 +332,7 @@ namespace ConsoleApplication12
         {
             XPathNodeIterator nodes = navigator.Select("//base:call[not(base:name[@diff:status]) and base:name='scanf' and  @diff:status='below']/base:argument_list[" +
             "base:argument/base:expr[lit:literal/@diff:status or base:name/@diff:status or base:call/@diff:status]]"
-            + " | //base:call[not(base:name[@diff:status]) and base:name='scanf']/base:argument_list[@similarity!='1'] ", manager);
+            + " | //base:call[not(base:name[@diff:status]) and base:name='scanf' and  @diff:status='below' ]/base:argument_list[@similarity!='1'] ", manager);
 
             while (nodes.MoveNext())
             {

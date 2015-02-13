@@ -141,6 +141,11 @@ namespace ConsoleApplication12
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
+            // Osetruje pripad pri ktoro s pouzitim vlastneho diffu
+            // moze dojst k chybnej identifikacii zmeny podmienky
+            if (conditionBefore == conditionAfter)
+                return;
+
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
             XElement my_element = new XElement("action",
                     new XElement("name", "condition_change"),

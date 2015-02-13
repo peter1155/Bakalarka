@@ -116,21 +116,20 @@ namespace ConsoleApplication12
             }
         }
 
-
         static void Main(string[] args)
         {
             // Ziskava instanciu triedy Src2SrcMLRunner na preklad zdrojoveho kodu do xml
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
 
             // Prehadza vsetkymi subormi pre danu ulohu a identifikuje vybrane cinnosti
-            for (int student = 1; student < 60; student++)
+            for (int student = 20; student < 207; student++)
             {
                 for (int pokus = 0; pokus < 30; pokus++)
                 {
                     Boolean fileExist = true;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName1 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
+                    String fileName1 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
                     if (!File.Exists(fileName1 + ".c"))
                         fileExist = false;
 
@@ -141,13 +140,13 @@ namespace ConsoleApplication12
                     fileExist = true;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "wrong";
+                    String fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "wrong";
                     if (!File.Exists(fileName2 + ".c"))
                         fileExist = false;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
                     if (!fileExist)
-                        fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_6-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "correct";
+                        fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "correct";
 
                     fileExist = true;
                     if (!File.Exists(fileName2 + ".c"))
@@ -160,6 +159,16 @@ namespace ConsoleApplication12
                     // Time messurement
                     DateTime start = DateTime.Now;
 
+                    FileInfo fileInfo1 = new FileInfo(fileName1 + ".c");
+                    long size1 = fileInfo1.Length / 1000;
+
+                    FileInfo fileInfo2 = new FileInfo(fileName2 + ".c");
+                    long size2 = fileInfo2.Length / 1000;
+
+                    // Ak je velkost niektoreho zo suborov viac ako 50 KB chod na dalsi
+                    if (size1 > 50 || size2 > 50)
+                        continue;
+                    
                     //////////////////////////////////////////// SrcToSrcML preklad ////////////////////////////////////////////////////
 
                     // Prelozi subori so zdrojovym kodom do formatu xml 
@@ -315,7 +324,7 @@ namespace ConsoleApplication12
                     Console.WriteLine(timeItTook);
 
                     // Prekopirovanie suboru so zaznamenanymi cinnostami do prislusneho priecinka
-                    File.Copy("RecordedActions.xml", fileName2 + ".xml");
+                    File.Copy("RecordedActions.xml", fileName2 + ".xml",true);
                     Console.WriteLine("Subor: " + fileName2 + " spracovany");
                 }
             }

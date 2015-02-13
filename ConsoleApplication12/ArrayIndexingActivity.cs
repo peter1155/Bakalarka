@@ -187,6 +187,10 @@ namespace ConsoleApplication12
             List<String> names = new List<string>();
             String nameBefore = findNameInSourceExpresion("source_data1.xml", id, manager);
             String nameAfter = findNameInSourceExpresion("source_data2.xml", id, manager);
+            
+            // Ak sa nepodarilo jedno z mien najst 
+            if (nameBefore == null || nameAfter == null)
+                return null;
             names.Add(nameBefore);
             names.Add(nameAfter);
 
@@ -195,14 +199,20 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu premennej - pola pri zmene indexovania pri pouziti v programe
-        private List<String> getTypeExpression(XmlNamespaceManager manager, XPathNavigator navigator, XElement funcElement)
+        private List<String> getTypeExpression(XmlNamespaceManager manager, List<String> names, XElement funcElement)
         {
-            navigator.MoveToChild(XPathNodeType.Element);
+            //navigator.MoveToChild(XPathNodeType.Element);
 
+            String nameBefore = names.ElementAt(0);
+            nameBefore = nameBefore.Substring(0, nameBefore.IndexOf('['));
+            String nameAfter = names.ElementAt(1);
+            nameAfter = nameAfter.Substring(0, nameAfter.IndexOf('['));
+
+             
             if (funcElement.Value == "")
             {
-                String before = findTypeInSourceExpresion2("source_data1.xml", navigator.Value, manager);
-                String after = findTypeInSourceExpresion2("source_data2.xml", navigator.Value, manager);
+                String before = findTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
+                String after = findTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
                 List<String> list = new List<string>();
                 list.Add(before);
                 list.Add(after);
@@ -211,12 +221,12 @@ namespace ConsoleApplication12
             else
             {
                 var temp = funcElement.Descendants();
-                String before = findTypeInSourceExpresion1("source_data1.xml", navigator.Value, manager,temp.ElementAt(0).Value);
-                String after = findTypeInSourceExpresion1("source_data2.xml", navigator.Value, manager,temp.ElementAt(1).Value);
+                String before = findTypeInSourceExpresion1("source_data1.xml", nameBefore, manager, temp.ElementAt(0).Value);
+                String after = findTypeInSourceExpresion1("source_data2.xml", nameAfter, manager, temp.ElementAt(1).Value);
                 if(before==null || after==null )
                 {
-                    before = findTypeInSourceExpresion2("source_data1.xml", navigator.Value, manager);
-                    after = findTypeInSourceExpresion2("source_data2.xml", navigator.Value, manager);
+                    before = findTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
+                    after = findTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
                 }
                 List<String> list = new List<string>();
                 list.Add(before);
@@ -310,9 +320,11 @@ namespace ConsoleApplication12
             // Najde nazov pola na zaklade id
             XPathNodeIterator nodes = navigator.Select("//base:expr/base:name[@id='" + id + "']", manager);
             nodes.MoveNext();
-
-            // Vracia nazov daneho pola 
-            return nodes.Current.Value;
+            if (nodes.Count > 0)
+                // Vracia nazov daneho pola 
+                return nodes.Current.Value;
+            else
+                return null;
         }
 
         // Sluzi na najdenie typu lokalnej premennej pri pouziti v programe
@@ -377,6 +389,9 @@ namespace ConsoleApplication12
             List<String> names = getName(manager, navigator.Clone());
             List<String> types = getType(manager, navigator.Clone());
 
+            if (!names[0].Contains('[') || !names[1].Contains('['))
+                return;
+
             // Zistujem v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
@@ -413,15 +428,18 @@ namespace ConsoleApplication12
             // Nazov premennej
             List<String> names = getNameExpresion(manager, navigator.Clone());
 
+            if (names == null || !names[0].Contains('[') || !names[1].Contains('['))
+                return;
+
             // Zistujem v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
             
             // Typ pola
-            List<String> types = getTypeExpression(manager, navigator.Clone(),functionElement);
+            List<String> types = getTypeExpression(manager, names, functionElement);
 
             // Ak v skutocnosti nedoslo k zmene indexovania tak konci
             if (names.ElementAt(0) == names.ElementAt(1))
-                return;
+                 return;
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -485,7 +503,7 @@ namespace ConsoleApplication12
             initGlobalDocuments();
 
             // Najde elementy poli v ktorych nastala zmena v indexovani pri deklaracii
-            XPathNodeIterator nodes = navigator.Select("//base:decl[@diff:status]/base:name[@diff:status='below' and base:index/@diff:status]"/*and (base:index/@diff:status='modified'" 
+            XPathNodeIterator nodes = navigator.Select("//base:decl_stmt[not(@diff:status='removed') and not(@diff:status='added')]/base:decl[@diff:status]/base:name[@diff:status='below' and base:index/@diff:status]"/*and (base:index/@diff:status='modified'" 
                 +" or base:index/@diff:status='below')]"*/, manager);
 
             // Prechadza vsetky najdene elementy a zapisuje najdene zmeny do vystupneho xml suboru

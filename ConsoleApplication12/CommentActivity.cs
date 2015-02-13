@@ -109,6 +109,17 @@ namespace ConsoleApplication12
             // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
 
+            String tempSource = navigator.Value;
+            tempSource = tempSource.Replace("\n", "");
+            tempSource = tempSource.Replace("\r", "");
+            tempSource = tempSource.Replace(" ", "");
+            tempSource = tempSource.Replace("//", "");
+            tempSource = tempSource.Replace("/*", "");
+            tempSource = tempSource.Replace("*/", "");
+               
+            if (tempSource == "")
+                return;
+
             // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
@@ -134,6 +145,14 @@ namespace ConsoleApplication12
 
             // Zistuje v ktorej funkcii je to vnorene
             XElement functionElement = getFunctionNameElement(navigator.Clone());
+
+            String tempSource = navigator.Value;
+            tempSource = tempSource.Replace("\n", "");
+            tempSource = tempSource.Replace("\r", "");
+            tempSource = tempSource.Replace(" ", "");
+
+            if (tempSource == "")
+                return;
 
             // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");

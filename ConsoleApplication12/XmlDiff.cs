@@ -184,6 +184,8 @@ namespace ConsoleApplication12
 
                                 XmlNodeList beforeList = tempNode.SelectNodes("child::text()");
                                 XmlNodeList afterList = listNode.SelectNodes("child::text()");
+
+                                bool modification = false;
                                 int count = 0;
                                 while(afterList.Count > count || beforeList.Count > count)
                                 //for (int i = 0; i < beforeList.Count; i++)
@@ -195,19 +197,26 @@ namespace ConsoleApplication12
                                             if (beforeList[count].Value != afterList[count].Value)
                                             {
                                                 afterList[count].Value = beforeList[count].Value + "~" + afterList[count].Value;
+                                                modification = true;
                                             }
                                         }
                                         else
                                         {
                                             afterList[count].Value = "~" + afterList[count].Value;
+                                            modification = true;
                                         }
                                     }
                                     else
+                                    {
                                         beforeList[count].Value += "~";
+                                        modification = true;
+                                    }
+
                                     count++;
                                 }
 
-
+                                if (!modification)
+                                    diffAtrib.Value = "below";
 
                                 listNode.Attributes.Append(diffAtrib);
                                 setParentDiffStatus(doc1, listNode, root);

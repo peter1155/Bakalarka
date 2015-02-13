@@ -119,11 +119,30 @@ namespace ConsoleApplication12
         {
             float similarity = -1;
 
+           
+            // Zabezpeci aby komentar nebol namapovany s kodom ... 
+            if ((root1.Name == "comment" && root2.Name != "comment")
+                || (root1.Name != "comment" && root2.Name == "comment"))
+                return 0;
+
+            // Zabezpeci aby sa volania kniznicnych funkcii printf, scanf, putchar mapovali vzdy iba na seba
+            if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element
+                && root1.Name == "call" && root2.Name == "call" 
+                && ((root1.ChildNodes[0].InnerText == "printf" && root2.ChildNodes[0].InnerText != "printf")
+                || (root1.ChildNodes[0].InnerText == "scanf" && root2.ChildNodes[0].InnerText != "scanf")
+                || (root1.ChildNodes[0].InnerText == "putchar" && root2.ChildNodes[0].InnerText != "putchar")
+                || (root1.ChildNodes[0].InnerText != "printf" && root2.ChildNodes[0].InnerText == "printf")
+                || (root1.ChildNodes[0].InnerText != "scanf" && root2.ChildNodes[0].InnerText == "scanf")
+                || (root1.ChildNodes[0].InnerText != "putchar" && root2.ChildNodes[0].InnerText == "putchar")))
+                return 0;
+
             // Zabezpeci aby sa main vzdy mapoval na main
             if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element
-                && root1.Name == "function" && root2.Name == "function" && root1.ChildNodes[1].InnerText == "main" 
+                && root1.Name == "function" && root2.Name == "function" && root1.ChildNodes[1].InnerText == "main"
                 && root2.ChildNodes[1].InnerText == "main")
+            {
                 similarity = 1;
+            }
             else if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element)
             {
                 // Ziska podobnost nazvov subelementov
