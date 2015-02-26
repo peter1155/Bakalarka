@@ -119,7 +119,6 @@ namespace ConsoleApplication12
         {
             float similarity = -1;
 
-           
             // Zabezpeci aby komentar nebol namapovany s kodom ... 
             if ((root1.Name == "comment" && root2.Name != "comment")
                 || (root1.Name != "comment" && root2.Name == "comment"))
@@ -790,9 +789,14 @@ namespace ConsoleApplication12
             // Rekurzivne priradzuje id podobnym elementom
             recursiveSimilarity(doc1, doc2, doc1.ChildNodes, doc2.ChildNodes);
 
-            // Pre zvysne nezaindexovane uzly sa pokusa ratat all to all podobnost
-            //computeSimilarityForNotIndexed(doc1, doc2);
-            AllNotIndexedSimilarity(doc1, doc2);
+            // Ak sa vyuziva komplexna metoda vykona sa all to all
+            // porovnanie vsetkych elementov patriacich do rovnakych funkcii
+            if (Options.Method == Options.Methods.Complex)
+            {
+                // Pre zvysne nezaindexovane uzly sa pokusa ratat all to all podobnost
+                //computeSimilarityForNotIndexed(doc1, doc2);
+                AllNotIndexedSimilarity(doc1, doc2);
+            }
             
             // Najde rovnake elementy ktorym neboli priradene idecka
             //postIndexing(doc1, doc2, node1.ChildNodes, node2.ChildNodes);

@@ -39,6 +39,7 @@
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -62,6 +63,7 @@
     <Compile Include="ConditionChangeActivity.cs" />
     <Compile Include="InputChangeActivity.cs" />
     <Compile Include="LoopChangeActivity.cs" />
+    <Compile Include="Options.cs" />
     <Compile Include="OutputCanceledActivity.cs" />
     <Compile Include="OutputChangeActivity.cs" />
     <Compile Include="Program.cs" />

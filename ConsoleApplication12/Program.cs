@@ -82,16 +82,16 @@ namespace ConsoleApplication12
         }
         
         // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
-        private static void xmlPostIndexingProcessing(String fileName)
+        /*private static void xmlPostIndexingProcessing(String fileName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
             xmlRecursivePostIndexingProcessing(doc.ChildNodes, doc);
             doc.Save(fileName);
-        }
+        }*/
 
         // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
-        private static void xmlRecursivePostIndexingProcessing(XmlNodeList list1, XmlDocument doc)
+        /*private static void xmlRecursivePostIndexingProcessing(XmlNodeList list1, XmlDocument doc)
         {
             foreach (XmlNode listNode in list1)
             {
@@ -114,22 +114,25 @@ namespace ConsoleApplication12
                 else if (listNode.HasChildNodes)
                     xmlRecursivePostIndexingProcessing(listNode.ChildNodes, doc);
             }
-        }
+        }*/
 
         static void Main(string[] args)
         {
+            // Nacitanie konfiguracie aplikacie
+            Options.loadProgramConfiguration();
+
             // Ziskava instanciu triedy Src2SrcMLRunner na preklad zdrojoveho kodu do xml
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
 
             // Prehadza vsetkymi subormi pre danu ulohu a identifikuje vybrane cinnosti
-            for (int student = 20; student < 207; student++)
+            for (int student = Options.StartStudent; student < Options.EndStudent; student++)
             {
-                for (int pokus = 0; pokus < 30; pokus++)
+                for (int pokus = Options.StartAttempt; pokus < Options.EndAttempt; pokus++)
                 {
                     Boolean fileExist = true;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName1 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
+                    String fileName1 = Options.TaskPath + student.ToString("D4") + "_" + pokus.ToString("D2") + "_" + "wrong";
                     if (!File.Exists(fileName1 + ".c"))
                         fileExist = false;
 
@@ -140,13 +143,13 @@ namespace ConsoleApplication12
                     fileExist = true;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
-                    String fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "wrong";
+                    String fileName2 = Options.TaskPath + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "wrong";
                     if (!File.Exists(fileName2 + ".c"))
                         fileExist = false;
 
                     // Vysklada meno suboru a overi ci dany subor existuje 
                     if (!fileExist)
-                        fileName2 = "C:\\Users\\peto\\Desktop\\per_task_all\\Uloha_2-1\\" + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "correct";
+                        fileName2 = Options.TaskPath + student.ToString("D4") + "_" + (pokus + 1).ToString("D2") + "_" + "correct";
 
                     fileExist = true;
                     if (!File.Exists(fileName2 + ".c"))
@@ -179,12 +182,6 @@ namespace ConsoleApplication12
 
                     //////////////////////////////////////////// SrcToSrcML preklad ////////////////////////////////////////////////////
 
-                    /*
-                    my_runner.GenerateSrcMLFromFile("source_code1.c",
-                            "source_data1.xml", ABB.SrcML.Language.C);
-                    my_runner.GenerateSrcMLFromFile("source_code2.c",
-                         "source_data2.xml", ABB.SrcML.Language.C);*/
-
                     xmlPreProcessing("source_data1.xml");
                     xmlPreProcessing("source_data2.xml");
 
@@ -216,20 +213,26 @@ namespace ConsoleApplication12
 
                     ///////////////////////////////////////// XML Differencing ////////////////////////////////////
 
-                    /*string filename = "libxmldiff_new\\xmldiff";
+                    // V zavislosti od vybranej metody sa veberie sposob diffovania
+                    if (Options.Method == Options.Methods.Fast)
+                    {
+                        string filename = "libxmldiff_new\\xmldiff";
 
-                    // Ako separator je pouzita tilda ta by sa v kode nemala vyskytnut resp. minimalne, diffuje sa podla ids vypocitanych
-                    // v similarityBasedIndexing classe, ignoruju sa cisla riadkov a stlpcov a zaroven similarity atribut
-                    string parameteres = " diff --ids @id --ignore @line,@column,@similarity,@temp_id --sep ~ source_data1.xml source_data2.xml difference.xml";
+                        // Ako separator je pouzita tilda ta by sa v kode nemala vyskytnut resp. minimalne, diffuje sa podla ids vypocitanych
+                        // v similarityBasedIndexing classe, ignoruju sa cisla riadkov a stlpcov a zaroven similarity atribut
+                        string parameteres = " diff --ids @id --ignore @line,@column,@similarity,@temp_id --sep ~ source_data1.xml source_data2.xml difference.xml";
 
-                    Process p = new Process();
-                    p.StartInfo.FileName = filename;
-                    p.StartInfo.Arguments = parameteres;
-                    p.Start();
-                    p.WaitForExit();*/
-
-                    XMLDiff myDiffer = new XMLDiff();
-                    myDiffer.diffXmlFiles("source_data1.xml", "source_data2.xml");
+                        Process p = new Process();
+                        p.StartInfo.FileName = filename;
+                        p.StartInfo.Arguments = parameteres;
+                        p.Start();
+                        p.WaitForExit();
+                    }
+                    else
+                    {
+                        XMLDiff myDiffer = new XMLDiff();
+                        myDiffer.diffXmlFiles("source_data1.xml", "source_data2.xml");
+                    }
 
                     ////////////////////////////////////////// XML Differencing /////////////////////////////////////
 
