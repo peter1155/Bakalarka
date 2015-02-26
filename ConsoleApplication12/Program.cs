@@ -14,6 +14,7 @@ namespace ConsoleApplication12
 {
     class Program
     {
+        
         // Vytvori xml subor na zapis zaznamenanych cinnosti
         public static void createXMLDoc()
         {
@@ -118,9 +119,15 @@ namespace ConsoleApplication12
 
         static void Main(string[] args)
         {
+            // pocita spracovane kody
+            int taskCounter = 0;
+            
+            // Time messurement
+            DateTime allTaskStart = DateTime.Now;
+
             // Nacitanie konfiguracie aplikacie
             Options.loadProgramConfiguration();
-
+            
             // Ziskava instanciu triedy Src2SrcMLRunner na preklad zdrojoveho kodu do xml
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
 
@@ -323,13 +330,29 @@ namespace ConsoleApplication12
                     // Time messurement
                     TimeSpan timeItTook = DateTime.Now - start;
 
-                    // Vypis casu potrebneho na vypocet 
-                    Console.WriteLine(timeItTook);
+                    if (Options.Time == Options.ShowTime.Show)
+                    {
+                        // Vypis casu potrebneho na vypocet 
+                        Console.WriteLine(timeItTook);
+                    }
 
                     // Prekopirovanie suboru so zaznamenanymi cinnostami do prislusneho priecinka
                     File.Copy("RecordedActions.xml", fileName2 + ".xml",true);
                     Console.WriteLine("Subor: " + fileName2 + " spracovany");
+                    taskCounter++;
                 }
+            }
+            
+            // Time messurement
+            if (Options.Time == Options.ShowTime.Show)
+            {
+                TimeSpan timeItTookAll = DateTime.Now - allTaskStart;
+                Console.WriteLine("Celkovy pocet vytvorenych zaznamov: {0}",taskCounter);
+                Console.WriteLine("Priemerny cas spracovania na ulohu: " + (float)timeItTookAll.TotalSeconds / (float)taskCounter);
+            }
+            else
+            {
+                Console.WriteLine("Process finished sucessfully");
             }
             Console.ReadKey();
         }

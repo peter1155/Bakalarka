@@ -13,7 +13,12 @@ namespace ConsoleApplication12
 
         public enum Methods
         {
-            Fast,Complex
+            Fast, Complex
+        }
+
+        public enum ShowTime
+        {
+            Hide,Show
         }
 
         // cesta k suborom so zdrojovymi kodmi
@@ -33,6 +38,9 @@ namespace ConsoleApplication12
 
         // metoda ktora sa ma pouzit
         public static Methods Method { get; private set; }
+
+        // metoda ktora sa ma pouzit
+        public static ShowTime Time { get; private set; }
         
         // Metoda nacita konfiguraciu s konfiguracneho suboru
         public static void loadProgramConfiguration()
@@ -43,6 +51,7 @@ namespace ConsoleApplication12
             StartAttempt = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["AttemptStart"]);
             EndAttempt = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["AttemptEnd"]);
             Method = (Methods)Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["method"]);
+            Time = (ShowTime)Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["timeShow"]);
         }
     
         
