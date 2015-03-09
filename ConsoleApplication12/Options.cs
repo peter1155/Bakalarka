@@ -44,7 +44,7 @@ namespace ConsoleApplication12
         public static ShowTime Time { get; private set; }
         
         // Metoda nacita konfiguraciu s konfiguracneho suboru
-        public static void loadProgramConfiguration() 
+        public static void LoadProgramConfiguration() 
         {
             TaskPath = System.Configuration.ConfigurationManager.AppSettings["taskPath"];
             if(!Directory.Exists(TaskPath))

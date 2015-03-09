@@ -15,10 +15,10 @@ namespace ConsoleApplication12
     class ConditionChangeActivity
     {
         // V liste su ulozene idecka if elementov na ktorych boli pridane/odobrate else vetvy
-        List<String> elseAddedIds;
+        List<String> _elseAddedIds;
 
         // Najde funkciu v ktorej je dana podmienka vnorena a vytvori prislusny XElement
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
@@ -73,7 +73,7 @@ namespace ConsoleApplication12
         }
 
         // Najde poziciu elementu s nazvom elementName 
-        public List<String> findPosition(String elementName, XPathNavigator navigator)
+        public List<String> FindPosition(String elementName, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
             {
@@ -89,7 +89,7 @@ namespace ConsoleApplication12
         }
 
         // Najde podmienku pred zmenou a po zmene
-        private List<String> getConditionBeforeAfter(XmlNamespaceManager manager, XPathNavigator navigator)
+        private List<String> GetConditionBeforeAfter(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, "if") != 0)
             {
@@ -97,8 +97,8 @@ namespace ConsoleApplication12
             }
 
             String id = navigator.GetAttribute("id", "");
-            String conditionBefore = findInSource("source_data1.xml", id, manager);
-            String conditionAfter = findInSource("source_data2.xml", id, manager);
+            String conditionBefore = FindInSource("source_data1.xml", id, manager);
+            String conditionAfter = FindInSource("source_data2.xml", id, manager);
 
             // Mazem otvaraciu a zatvaraciu zatvorku
             conditionBefore = conditionBefore.Substring(1, conditionBefore.Length - 2);
@@ -112,7 +112,7 @@ namespace ConsoleApplication12
         }
 
         // Vracia id if elementu daneho navigatorom
-        private String getIfId(XPathNavigator navigator)
+        private String GetIfId(XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, "if") != 0)
             {
@@ -123,20 +123,20 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikovanu zmenu podmienky do vystupneho xml suboru
-        public void writeActionConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
-            List<String> list = findPosition("if", navigator.Clone());
+            List<String> list = FindPosition("if", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
             
             // Zistujem podmienku pred zmenou a po zmene 
-            list = getConditionBeforeAfter(manager, navigator.Clone());
+            list = GetConditionBeforeAfter(manager, navigator.Clone());
             String conditionBefore = list.ElementAt(0);
             String conditionAfter = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -162,18 +162,18 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikaciu zmeny v tele podmienovacieho prikazu if/else do vystupneho xml suboru
-        public void writeActionConditionChangeIfElse(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionConditionChangeIfElse(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem na ktorej vetve nastala zmena
             String branch = navigator.Name;
             
             // Zistujem poziciu if
-            List<String> list = findPosition("if", navigator.Clone());
+            List<String> list = FindPosition("if", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -192,24 +192,24 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikovane pridanie/zmazanie else vetvy do vystupneho xml suboru
-        public void writeActionConditionChangeElse(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionConditionChangeElse(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             String type = navigator.GetAttribute("status","http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
             // Zistujem poziciu if
-            List<String> list = findPosition("if", navigator.Clone());
+            List<String> list = FindPosition("if", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
 
             // Ziska id atribut if elemntu
-            String id = getIfId(navigator.Clone());
+            String id = GetIfId(navigator.Clone());
 
-            if (falseIdentificationElse(id))
+            if (FalseIdentificationElse(id))
                 return;
             
             // Pridana funkcia meno,typ,riadok,stlpec,parameter list
@@ -226,7 +226,7 @@ namespace ConsoleApplication12
         }
 
         // Najde podmienku v zdrojovom xml subore fileName na zaklade id a vrati ju ako string
-        private String findInSource(String fileName, String id, XmlNamespaceManager manager)
+        private String FindInSource(String fileName, String id, XmlNamespaceManager manager)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -244,9 +244,9 @@ namespace ConsoleApplication12
 
         // V pripade ze sa nepodarilo namapovat tu istu else vetvu z jednej verzie na druhu je potrebne to 
         // osetrit protoze inak bude vo vystupnom subore vetva else brana ako pridana a vymazana
-        private bool falseIdentificationElse(String id)
+        private bool FalseIdentificationElse(String id)
         {
-            if(elseAddedIds.Contains(id))
+            if(_elseAddedIds.Contains(id))
             {
                 XmlDocument doc = new XmlDocument();
                 doc.Load("RecordedActions.xml");
@@ -258,17 +258,17 @@ namespace ConsoleApplication12
             }
             else
             {
-                elseAddedIds.Add(id);
+                _elseAddedIds.Add(id);
                 return false;
             }
         }
 
         // Najde zmeny vykonane nad if/else konstrukciou a zapise prislusne zmeny
-        public void findConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindConditionChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Sluzi na pridavanie idecok else vetiev
             
-            elseAddedIds = new List<String>();
+            _elseAddedIds = new List<String>();
 
             XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status='below' and base:condition[@diff:status]]"
                 + " | //base:if[@diff:status='below' and base:condition[@similarity!='1']]", manager);
@@ -276,7 +276,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionConditionChange(manager, nodesNavigator);
+                WriteActionConditionChange(manager, nodesNavigator);
             }
 
             /*nodes = navigator.Select("//base:if[@diff:status='below']/base:then[@diff:status='below'] "
@@ -298,7 +298,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionConditionChangeElse(manager, nodesNavigator);
+                WriteActionConditionChangeElse(manager, nodesNavigator);
             }
         }
     }

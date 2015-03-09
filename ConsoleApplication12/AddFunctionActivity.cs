@@ -16,7 +16,7 @@ namespace ConsoleApplication12
     class AddFunctionActivity
     {
         // Zapise prislusnu akciu do vystupneho xml suboru
-        public void writeActionScan(XPathNavigator navigator)
+        public void WriteActionScan(XPathNavigator navigator)
         {
             // Sluzi na zaznamenanie cisla riadku
             String line = null;
@@ -124,7 +124,7 @@ namespace ConsoleApplication12
 
         // Urobi dopyt nad difference XML dokumentom a vyhlada pridane funkcie ak sa nejake najdu
         // zaznamena prislusnu akciu do vystupneho xml suboru
-        public void findAddedFunctions(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindAddedFunctions(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Najde pridane funkcie
             XPathNodeIterator nodes = navigator.Select("//base:function[@diff:status='added']", manager);
@@ -133,7 +133,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
-                writeActionScan(currentNode);
+                WriteActionScan(currentNode);
             }
         }
     }

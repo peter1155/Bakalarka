@@ -14,7 +14,7 @@ namespace ConsoleApplication12
 {
     class CallFunctionChangeActivity
     {
-        public List<String> findPosition(String elementName, XPathNavigator navigator)
+        public List<String> FindPosition(String elementName, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
             {
@@ -40,7 +40,7 @@ namespace ConsoleApplication12
 
         // Sluzi na ziskanie zoznamu argumentov vo formate String pre volanie funkcie
         // ktorej atribut id je rovny id v zdrojovom subore s menom fileName
-        private String findInSource(String id, String fileName)
+        private String FindInSource(String id, String fileName)
         {
             // Nacitanie obsahu suboru do XmlDocument objektu
             XmlDocument doc = new XmlDocument();
@@ -82,7 +82,7 @@ namespace ConsoleApplication12
         }
 
         // Vracia elment s nazvami funkcie
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
@@ -142,7 +142,7 @@ namespace ConsoleApplication12
         }
 
         // Vracia element s nazvami volanej funkcie
-        private XElement getFunctionCallNameElement(XPathNavigator navigator)
+        private XElement GetFunctionCallNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "call") != 0)
@@ -201,7 +201,7 @@ namespace ConsoleApplication12
         // Sluzi na ziskanie zoznamu argumentov prva polozka listu je string 
         // obsahujuci argumenty pred zmenou a druha polozka je string obsahujuci
         // argumenty po zmene
-        private List<String> manualParse(XPathNavigator navigator)
+        private List<String> ManualParse(XPathNavigator navigator)
         {
             String parameters_before = null;
             String parameters_after = null;
@@ -313,19 +313,19 @@ namespace ConsoleApplication12
         }
         
         // Zapise identifikovanu zmenu volania funkcie do vystupneho xml suboru
-        public void writeActionCallModified(XPathNavigator navigator)
+        public void WriteActionCallModified(XPathNavigator navigator)
         {
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zistujem poziciu 
-            List<String> position = findPosition("call", navigator.Clone());
+            List<String> position = FindPosition("call", navigator.Clone());
             String line = position.ElementAt(0);
             String column = position.ElementAt(1);
 
             // Zistujem meno volanej funkcie
-            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
+            XElement functionCallElement = GetFunctionCallNameElement(navigator.Clone());
 
             // Zistujem id elementu call 
             XPathNavigator tempNavigator2 = navigator.Clone();
@@ -338,8 +338,8 @@ namespace ConsoleApplication12
             String id = tempNavigator2.GetAttribute("id", "");
 
             // Ziska argumenty funkcie
-            String parametersBefore = findInSource(id, "source_data1.xml");
-            String parametersAfter = findInSource(id, "source_data2.xml");
+            String parametersBefore = FindInSource(id, "source_data1.xml");
+            String parametersAfter = FindInSource(id, "source_data2.xml");
 
             if (parametersBefore == parametersAfter)
                 return;
@@ -374,18 +374,18 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikovane pridanie volania funkcie do vystupneho xml
-        public void writeActionCallAdded(XPathNavigator navigator)
+        public void WriteActionCallAdded(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zistujem poziciu 
-            List<String> position = findPosition("call", navigator.Clone());
+            List<String> position = FindPosition("call", navigator.Clone());
             String line = position.ElementAt(0);
             String column = position.ElementAt(1);
 
             // Zistujem meno volanej funkcie
-            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
+            XElement functionCallElement = GetFunctionCallNameElement(navigator.Clone());
 
             // Zistujem poziciu funkci
             XPathNavigator tempNavigator2 = navigator.Clone();
@@ -396,7 +396,7 @@ namespace ConsoleApplication12
 
             String id = tempNavigator2.GetAttribute("id", "");
             String parametersAfter;
-            var list = manualParse(tempNavigator2.Clone());
+            var list = ManualParse(tempNavigator2.Clone());
             parametersAfter = list.ElementAt(1);
             XElement function_parameters = new XElement("function_parameters",parametersAfter);
             
@@ -418,18 +418,18 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikovane vymazanie volania funkcie do vystupneho xml
-        public void writeActionCallDeleted(XPathNavigator navigator)
+        public void WriteActionCallDeleted(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zistujem poziciu 
-            List<String> position = findPosition("call", navigator.Clone());
+            List<String> position = FindPosition("call", navigator.Clone());
             String line = position.ElementAt(0);
             String column = position.ElementAt(1);
 
             // Zistujem meno volanej funkcie
-            XElement functionCallElement = getFunctionCallNameElement(navigator.Clone());
+            XElement functionCallElement = GetFunctionCallNameElement(navigator.Clone());
 
             // Zistujem poziciu funkcie scanf
             XPathNavigator tempNavigator2 = navigator.Clone();
@@ -443,7 +443,7 @@ namespace ConsoleApplication12
 
             // Ziska zoznam vstupnych argumentov funkcie
             String parametersBefore;            
-            var list = manualParse(tempNavigator2.Clone());
+            var list = ManualParse(tempNavigator2.Clone());
             parametersBefore = list.ElementAt(0);
            
             XElement function_parameters = new XElement("function_parameters", parametersBefore);
@@ -468,7 +468,7 @@ namespace ConsoleApplication12
         // Najde nazvy vsetkych programatorom zadefinovanych funkcii v zdrojovom kode 
         // Nazvy je potrebne najst pretoze sa budu hladat iba zmeny volani funkcii zadefinovanych
         // programatorom
-        public List<String> getFunctionNames(XmlNamespaceManager manager, XPathNavigator navigator)
+        public List<String> GetFunctionNames(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             List<String> functionList = new List<string>();
 
@@ -498,10 +498,10 @@ namespace ConsoleApplication12
         }
         
         // Sluzi na identifikaciu zmien vo volaniach funkcii
-        public void findChangedFunctionCalls(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindChangedFunctionCalls(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Ziskaj nazvy programatorom zadefinovanych funkcii
-            List<String> functionList = getFunctionNames(manager, navigator);
+            List<String> functionList = GetFunctionNames(manager, navigator);
            
             // Najskor identifikujeme modifikovane volania funkcii
             
@@ -528,7 +528,7 @@ namespace ConsoleApplication12
             // Zapis zmenu do vystupneho XML
             for(int i=0;i<modifiedCalls.Count;i++)
             {
-                writeActionCallModified(modifiedCalls.ElementAt(i));
+                WriteActionCallModified(modifiedCalls.ElementAt(i));
             }
 
             // Teraz to iste pre pridane volania
@@ -555,7 +555,7 @@ namespace ConsoleApplication12
             // Zapis zmenu do vystupneho XML
             for (int i = 0; i < modifiedCalls.Count; i++)
             {
-                writeActionCallAdded(modifiedCalls.ElementAt(i));
+                WriteActionCallAdded(modifiedCalls.ElementAt(i));
             }
 
             // Teraz to iste pre vymazane volania
@@ -581,7 +581,7 @@ namespace ConsoleApplication12
             // Zapis zmenu do vystupneho XML
             for (int i = 0; i < modifiedCalls.Count; i++)
             {
-                writeActionCallDeleted(modifiedCalls.ElementAt(i));
+                WriteActionCallDeleted(modifiedCalls.ElementAt(i));
             }
         }
     }

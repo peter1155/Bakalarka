@@ -15,19 +15,19 @@ namespace ConsoleApplication12
     class ArrayIndexingActivity
     {
         // objekt obsahuje obsah prveho zdrojoveho xml
-        private XmlDocument doc1Global;
+        private XmlDocument _doc1Global;
 
         // objekt obsahuje obsah druheho zdrojoveho xml
-        private XmlDocument doc2Global;
+        private XmlDocument _doc2Global;
         
         // xPathDoc sluzi na dopytovanie prveho zdrojoveho xml
-        private XPathDocument xPathDoc1Global;
+        private XPathDocument _xPathDoc1Global;
 
         // xPathDoc sluzi na dopytovanie druheho zdrojoveho xml
-        private XPathDocument xPathDoc2Global;
+        private XPathDocument _xPathDoc2Global;
 
         // Sluzi na ziskanie elementu nazvu nadradenej funkcie
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
 
@@ -99,7 +99,7 @@ namespace ConsoleApplication12
         }
 
         // Hlada cislo riadka a stlpca daneho elementu
-        public List<String> findPosition(XPathNavigator navigator)
+        public List<String> FindPosition(XPathNavigator navigator)
         {
             
             // Pohne sa smerom k vnorenemu name, ktore ma dane atributy
@@ -120,7 +120,7 @@ namespace ConsoleApplication12
         }
 
         // Hlada typ danej premennej v zdrojovych xml suboroch
-        private List<String> getType(XmlNamespaceManager manager, XPathNavigator navigator)
+        private List<String> GetType(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Hlada rodicovsky element daneho pola bud je pole zadeclarovane ako nova premenna - decl_stmt
             // alebo je pole vstupnym parametrom nejakej funkcie - param
@@ -142,13 +142,13 @@ namespace ConsoleApplication12
             // Hlada typy v zdrojovych xml suboroch
             if (navigator.Name == "decl_stmt")
             {
-                typeBefore = findTypeInSourceDeclStmt("source_data1.xml", id, manager);
-                typeAfter = findTypeInSourceDeclStmt("source_data2.xml", id, manager);
+                typeBefore = FindTypeInSourceDeclStmt("source_data1.xml", id, manager);
+                typeAfter = FindTypeInSourceDeclStmt("source_data2.xml", id, manager);
             }
             else // Name = param
             {
-                typeBefore = findTypeInSourceParam("source_data1.xml", id, manager);
-                typeAfter = findTypeInSourceParam("source_data2.xml", id, manager);
+                typeBefore = FindTypeInSourceParam("source_data1.xml", id, manager);
+                typeAfter = FindTypeInSourceParam("source_data2.xml", id, manager);
             }
             types.Add(typeBefore);
             types.Add(typeAfter);
@@ -158,7 +158,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi nanajdenie nazvov danej premennej - pola pred zmenou a po zmene na zaklade poskytnuteho id
-        private List<String> getName(XmlNamespaceManager manager, XPathNavigator navigator)
+        private List<String> GetName(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Ziska id z daneho elementu
             String id = navigator.GetAttribute("id", "");
@@ -166,10 +166,10 @@ namespace ConsoleApplication12
             List<String> names = new List<string>();
             
             // Najde nazov premennej v prvej verzii XML 
-            String nameBefore = findNameInSource("source_data1.xml", id, manager);
+            String nameBefore = FindNameInSource("source_data1.xml", id, manager);
             
             // Najde nazov premennej v druhej verzii XML
-            String nameAfter = findNameInSource("source_data2.xml", id, manager);
+            String nameAfter = FindNameInSource("source_data2.xml", id, manager);
             
             // Prida nazvy do string listu a vracia dany string list
             names.Add(nameBefore);
@@ -178,15 +178,15 @@ namespace ConsoleApplication12
         }
          
         // Sluzi na najdenie nazvu premennej - pola pri zmene indexovania pri pouziti v programe
-        private List<String> getNameExpresion(XmlNamespaceManager manager, XPathNavigator navigator)
+        private List<String> GetNameExpresion(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Ziska id daneho elementu
             String id = navigator.GetAttribute("id", "");
 
             // Najde mena premennej v oboch verziach xml suboru na zaklade id
             List<String> names = new List<string>();
-            String nameBefore = findNameInSourceExpresion("source_data1.xml", id, manager);
-            String nameAfter = findNameInSourceExpresion("source_data2.xml", id, manager);
+            String nameBefore = FindNameInSourceExpresion("source_data1.xml", id, manager);
+            String nameAfter = FindNameInSourceExpresion("source_data2.xml", id, manager);
             
             // Ak sa nepodarilo jedno z mien najst 
             if (nameBefore == null || nameAfter == null)
@@ -199,7 +199,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu premennej - pola pri zmene indexovania pri pouziti v programe
-        private List<String> getTypeExpression(XmlNamespaceManager manager, List<String> names, XElement funcElement)
+        private List<String> GetTypeExpression(XmlNamespaceManager manager, List<String> names, XElement funcElement)
         {
             //navigator.MoveToChild(XPathNodeType.Element);
 
@@ -211,8 +211,8 @@ namespace ConsoleApplication12
              
             if (funcElement.Value == "")
             {
-                String before = findTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
-                String after = findTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
+                String before = FindTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
+                String after = FindTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
                 List<String> list = new List<string>();
                 list.Add(before);
                 list.Add(after);
@@ -221,12 +221,12 @@ namespace ConsoleApplication12
             else
             {
                 var temp = funcElement.Descendants();
-                String before = findTypeInSourceExpresion1("source_data1.xml", nameBefore, manager, temp.ElementAt(0).Value);
-                String after = findTypeInSourceExpresion1("source_data2.xml", nameAfter, manager, temp.ElementAt(1).Value);
+                String before = FindTypeInSourceExpresion1("source_data1.xml", nameBefore, manager, temp.ElementAt(0).Value);
+                String after = FindTypeInSourceExpresion1("source_data2.xml", nameAfter, manager, temp.ElementAt(1).Value);
                 if(before==null || after==null )
                 {
-                    before = findTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
-                    after = findTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
+                    before = FindTypeInSourceExpresion2("source_data1.xml", nameBefore, manager);
+                    after = FindTypeInSourceExpresion2("source_data2.xml", nameAfter, manager);
                 }
                 List<String> list = new List<string>();
                 list.Add(before);
@@ -236,7 +236,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu pola v zdrojovom xml na zaklade id (ked je pole deklarovane ako premenna)
-        private String findTypeInSourceDeclStmt(String fileName, String id, XmlNamespaceManager manager)
+        private String FindTypeInSourceDeclStmt(String fileName, String id, XmlNamespaceManager manager)
         {
             // Nacita obsah zdrojoveho xml suboru do objektu typu xmlDocument
             /*XmlDocument doc = new XmlDocument();
@@ -248,7 +248,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
             
             XPathNodeIterator nodes = navigator.Select("//base:decl_stmt[@id='" + id + "']/base:decl[1]/base:type", manager);
             nodes.MoveNext();
@@ -258,7 +258,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu pola v zdrojovom xml na zaklade id (ked je pole parametrom funkcie)
-        private String findTypeInSourceParam(String fileName, String id, XmlNamespaceManager manager)
+        private String FindTypeInSourceParam(String fileName, String id, XmlNamespaceManager manager)
         {
             // Nacita obsah zdrojoveho xml suboru do objektu typu xmlDocument
             /*XmlDocument doc = new XmlDocument();
@@ -270,7 +270,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
 
             XPathNodeIterator nodes = navigator.Select("//base:param[@id='" + id + "']/base:decl[1]/base:type", manager);
             nodes.MoveNext();
@@ -280,7 +280,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie nazvu premennej pri zmene indexacie pri deklaracii
-        private String findNameInSource(String fileName, String id, XmlNamespaceManager manager)
+        private String FindNameInSource(String fileName, String id, XmlNamespaceManager manager)
         {
             // Nacita zdrojove xml do objektu typu XmlDocument
             /*XmlDocument doc = new XmlDocument();
@@ -292,7 +292,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
 
             // Najde deklaraciu pola kde atribut id mena je zhodny s danym id
             XPathNodeIterator nodes = navigator.Select("//base:decl/base:name[@id='" + id + "']", manager);
@@ -303,7 +303,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie nazvu pola pri zmene indexacie pri pouziti v programe
-        private String findNameInSourceExpresion(String fileName, String id, XmlNamespaceManager manager)
+        private String FindNameInSourceExpresion(String fileName, String id, XmlNamespaceManager manager)
         {
             // Nacita obsah zdrojoveho xml do objektu XmlDocument
             /*XmlDocument doc = new XmlDocument();
@@ -315,7 +315,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
 
             // Najde nazov pola na zaklade id
             XPathNodeIterator nodes = navigator.Select("//base:expr/base:name[@id='" + id + "']", manager);
@@ -328,7 +328,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu lokalnej premennej pri pouziti v programe
-        private String findTypeInSourceExpresion1(String fileName, String name, XmlNamespaceManager manager, String func)
+        private String FindTypeInSourceExpresion1(String fileName, String name, XmlNamespaceManager manager, String func)
         {
             /*// Nacita obsah zdrojoveho xml do objektu XmlDocument
             XmlDocument doc = new XmlDocument();
@@ -340,7 +340,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
 
             // Najde typ premennej na zaklade jej mena a mena nadradenej funkcie
             XPathNodeIterator nodes = navigator.Select("//base:function[base:name='"+func+"']//base:decl_stmt/base:decl[base:name/base:name='" + name + "']/base:type", manager);
@@ -353,7 +353,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na najdenie typu globalnej premennej pri pouziti v programe
-        private String findTypeInSourceExpresion2(String fileName, String name, XmlNamespaceManager manager)
+        private String FindTypeInSourceExpresion2(String fileName, String name, XmlNamespaceManager manager)
         {
             // Nacita obsah zdrojoveho xml do objektu XmlDocument
             /*XmlDocument doc = new XmlDocument();
@@ -365,7 +365,7 @@ namespace ConsoleApplication12
             XPathNavigator navigator = document_xpath.CreateNavigator();*/
 
             // Ziskanie prislusneho navigatora podla fileName
-            XPathNavigator navigator = getNavigator(fileName);
+            XPathNavigator navigator = GetNavigator(fileName);
 
             // Najde typ premennej na zaklade jej mena
             XPathNodeIterator nodes = navigator.Select("//base:decl_stmt/base:decl[base:name/base:name='" + name + "']/base:type", manager);
@@ -378,22 +378,22 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na zapisanie identifikovanej zmeny v indexovani pola pri jeho deklaracii do vystupneho xml
-        public void writeActionArrayDeclModification(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionArrayDeclModification(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu 
-            List<String> list = findPosition(navigator.Clone());
+            List<String> list = FindPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Nazov premennej
-            List<String> names = getName(manager, navigator.Clone());
-            List<String> types = getType(manager, navigator.Clone());
+            List<String> names = GetName(manager, navigator.Clone());
+            List<String> types = GetType(manager, navigator.Clone());
 
             if (!names[0].Contains('[') || !names[1].Contains('['))
                 return;
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement FunctionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -402,7 +402,7 @@ namespace ConsoleApplication12
             XElement my_element = new XElement("action",
                     new XElement("name", "array_indexing"),
                     new XElement("type", "declaration"),
-                    functionElement,
+                    FunctionElement,
                     new XElement("variable",
                         new XElement("name",
                             new XElement("before", names.ElementAt(0)),
@@ -421,21 +421,21 @@ namespace ConsoleApplication12
         public void writeActionArrayIndexModification(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu
-            List<String> list = findPosition(navigator.Clone());
+            List<String> list = FindPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Nazov premennej
-            List<String> names = getNameExpresion(manager, navigator.Clone());
+            List<String> names = GetNameExpresion(manager, navigator.Clone());
 
             if (names == null || !names[0].Contains('[') || !names[1].Contains('['))
                 return;
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
             
             // Typ pola
-            List<String> types = getTypeExpression(manager, names, functionElement);
+            List<String> types = GetTypeExpression(manager, names, functionElement);
 
             // Ak v skutocnosti nedoslo k zmene indexovania tak konci
             if (names.ElementAt(0) == names.ElementAt(1))
@@ -464,43 +464,43 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na inicializaciu dokumntov 1. a 2. verzie xml suborov pre dopytovanie
-        private void initGlobalDocuments()
+        private void InitGlobalDocuments()
         {
             // Nacita obsah 1. zdrojoveho xml do objektu XmlDocument
-            doc1Global = new XmlDocument();
-            doc1Global.Load("source_data1.xml");
+            _doc1Global = new XmlDocument();
+            _doc1Global.Load("source_data1.xml");
 
             // Inicializuje xPathDoc1Global pre dopytovanie nad 1. xml
-            string xmlcontents = doc1Global.InnerXml;
+            string xmlcontents = _doc1Global.InnerXml;
             XmlReader reader = XmlReader.Create(new StringReader(xmlcontents));
-            xPathDoc1Global = new XPathDocument(reader);
+            _xPathDoc1Global = new XPathDocument(reader);
 
             // Nacita obsah 1. zdrojoveho xml do objektu XmlDocument
-            doc2Global = new XmlDocument();
-            doc2Global.Load("source_data2.xml");
+            _doc2Global = new XmlDocument();
+            _doc2Global.Load("source_data2.xml");
 
             // Inicializuje xPathDoc1Global pre dopytovanie nad 1. xml
-            xmlcontents = doc2Global.InnerXml;
+            xmlcontents = _doc2Global.InnerXml;
             reader = XmlReader.Create(new StringReader(xmlcontents));
-            xPathDoc2Global = new XPathDocument(reader);
+            _xPathDoc2Global = new XPathDocument(reader);
         }
 
         // Vytvara navigator pre dopytovanie nad zdrojovymi xml subormi
-        private XPathNavigator getNavigator(String fileName)
+        private XPathNavigator GetNavigator(String fileName)
         {
             if (fileName == "source_data1.xml")
-                return xPathDoc1Global.CreateNavigator();
+                return _xPathDoc1Global.CreateNavigator();
             else if (fileName == "source_data2.xml")
-                return xPathDoc2Global.CreateNavigator();
+                return _xPathDoc2Global.CreateNavigator();
             else
                 return null;
         }
 
         // Hlada zmenu indexovania v poliach (v deklaraciach aj pri pouziti v programe)
-        public void findArrayIndexingModification(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindArrayIndexingModification(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Nacita obsah zdrojovych xml suborov do premennych triedy (doc1Global,doc2Global,xPathDoc1Global,xPathDoc2Global)
-            initGlobalDocuments();
+            InitGlobalDocuments();
 
             // Najde elementy poli v ktorych nastala zmena v indexovani pri deklaracii
             XPathNodeIterator nodes = navigator.Select("//base:decl_stmt[not(@diff:status='removed') and not(@diff:status='added')]/base:decl[@diff:status]/base:name[@diff:status='below' and base:index/@diff:status]"/*and (base:index/@diff:status='modified'" 
@@ -510,7 +510,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionArrayDeclModification(manager, nodesNavigator);
+                WriteActionArrayDeclModification(manager, nodesNavigator);
             }
 
 

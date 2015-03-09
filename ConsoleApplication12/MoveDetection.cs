@@ -10,7 +10,7 @@ namespace ConsoleApplication12
 {
     class MoveDetection
     {
-        private void detectCallFunctionMoves(XmlDocument doc)
+        private void DetectCallFunctionMoves(XmlDocument doc)
         { 
             // Najdi vsetky elementy action ktorych meno je function_call a diff_type je added
             XmlNodeList nodesAdded = doc.SelectNodes("//action[name='function_call' and diff_type='added']");
@@ -141,7 +141,7 @@ namespace ConsoleApplication12
             
             // Detekujem presuny elementov call function
             if(Options.Method == Options.Methods.Complex)
-                detectCallFunctionMoves(doc);
+                DetectCallFunctionMoves(doc);
             else
                 DetectCallFunctionMovesFast(doc);
 

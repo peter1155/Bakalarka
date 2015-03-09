@@ -15,7 +15,7 @@ namespace ConsoleApplication12
     class LoopChangeActivity
     {
         // Ziska nazov funkcie v ktorej to je vnorene
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
@@ -70,7 +70,7 @@ namespace ConsoleApplication12
         }
 
         // Najde poziciu elementu elementName 
-        public List<String> findPosition(String elementName, XPathNavigator navigator)
+        public List<String> FindPosition(String elementName, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
             {
@@ -86,7 +86,7 @@ namespace ConsoleApplication12
         }
 
         // Najde podmienku pred zmenou a po zmene
-        private List<String> getConditionBeforeAfter(XmlNamespaceManager manager, XPathNavigator navigator, String elementName)
+        private List<String> GetConditionBeforeAfter(XmlNamespaceManager manager, XPathNavigator navigator, String elementName)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
             {
@@ -96,20 +96,20 @@ namespace ConsoleApplication12
             String id = navigator.GetAttribute("id", "");
 
             // Ziska podmienku pred zmenou
-            String conditionBefore = findInSource("source_data1.xml", id, manager,elementName);
+            String conditionBefore = FindInSource("source_data1.xml", id, manager,elementName);
              // Ziska podmienku po zmene 
-            String conditionAfter = findInSource("source_data2.xml", id, manager,elementName);
+            String conditionAfter = FindInSource("source_data2.xml", id, manager,elementName);
             
             // Treba osetrit pripad ked sa navzajom namapuju odlisne typy cyklov for-while, for-do,do-while,while-do
             if (conditionBefore == null)
             {
-                conditionBefore = findInSourceFor("source_data1.xml", id, manager, "condition");
+                conditionBefore = FindInSourceFor("source_data1.xml", id, manager, "condition");
                 if (conditionBefore == null)
                 {
                     if (elementName == "while")
-                        conditionBefore = findInSource("source_data1.xml", id, manager, "do");
+                        conditionBefore = FindInSource("source_data1.xml", id, manager, "do");
                     else
-                        conditionBefore = findInSource("source_data1.xml", id, manager, "while");
+                        conditionBefore = FindInSource("source_data1.xml", id, manager, "while");
                 }
                 else
                     conditionBefore = " conversion for -> " + elementName + "(" + conditionBefore + ") "; // medzeri zamerne ...
@@ -132,7 +132,7 @@ namespace ConsoleApplication12
 
         // Vracia podmienku v cykle ktorej rodicovsky element ma nazov elementName a id = id
         // zo suboru s nazvom fileName ako string
-        private String findInSource(String fileName, String id, XmlNamespaceManager manager, String elementName)
+        private String FindInSource(String fileName, String id, XmlNamespaceManager manager, String elementName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -150,7 +150,7 @@ namespace ConsoleApplication12
         }
         
         // Dostane string a vymaze z neho whitespaces
-        private String removeWhiteSpaces(String str)
+        private String RemoveWhiteSpaces(String str)
         {
             str = str.Replace(" ", "");
             str = str.Replace("\t", "");
@@ -159,16 +159,16 @@ namespace ConsoleApplication12
         }
 
         // Zapis zmenu v podmienke cyklu do vystupneho XML
-        public void writeActionLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             String parent = navigator.Name;//= getParent(navigator.Clone());
             // Zistuje poziciu
-            List<String> list = findPosition(parent, navigator.Clone());
+            List<String> list = FindPosition(parent, navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistuje podmienku pred zmenou a po zmene 
-            list = getConditionBeforeAfter(manager, navigator.Clone(),parent);
+            list = GetConditionBeforeAfter(manager, navigator.Clone(),parent);
             // Osetrenie pre pripad ze sa navzajom namapuju nespravne elmenty
             if (list == null)
                 return;
@@ -176,14 +176,14 @@ namespace ConsoleApplication12
             String conditionAfter = list.ElementAt(1);
 
             String tempCondBefore = conditionBefore;
-            tempCondBefore = removeWhiteSpaces(tempCondBefore);
+            tempCondBefore = RemoveWhiteSpaces(tempCondBefore);
             String tempCondAfter = conditionAfter;
-            tempCondAfter = removeWhiteSpaces(tempCondAfter);
+            tempCondAfter = RemoveWhiteSpaces(tempCondAfter);
             if (tempCondAfter == tempCondBefore)
                 return;
 
             // Zistuje v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -203,22 +203,22 @@ namespace ConsoleApplication12
         }
 
         // Zapis zmeny pre for cyklus, ktory ma ine elementy
-        public void writeActionLoopChangeFor(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionLoopChangeFor(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistuje poziciu 
-            List<String> list = findPosition("for", navigator.Clone());
+            List<String> list = FindPosition("for", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistuje podmienku pred zmenou a po zmene 
-            XElement control = getConditionBeforeAfterFor(manager, navigator.Clone());
+            XElement control = GetConditionBeforeAfterFor(manager, navigator.Clone());
 
             // Osetrenie pre pripad ze sa navzajom namapuju nespravne elementy napr. podmienka a cyklus
             if (control == null)
                 return;
 
             // Zistuje v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapise akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -237,7 +237,7 @@ namespace ConsoleApplication12
 
         // Vracia element s podmienkou pred zmenou a po zmene specialne pre for cyklus ktoreho
         // riadiaca cast pozostava z troch elementov: init, incr, condition
-        private XElement getConditionBeforeAfterFor(XmlNamespaceManager manager, XPathNavigator navigator)
+        private XElement GetConditionBeforeAfterFor(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, "for") != 0)
             {
@@ -246,20 +246,20 @@ namespace ConsoleApplication12
 
             String id = navigator.GetAttribute("id", "");
 
-            String conditionBefore = findInSourceFor("source_data1.xml", id, manager, "condition");
-            String initBefore = findInSourceFor("source_data1.xml", id, manager, "init");
-            String incrBefore = findInSourceFor("source_data1.xml", id, manager, "incr");
+            String conditionBefore = FindInSourceFor("source_data1.xml", id, manager, "condition");
+            String initBefore = FindInSourceFor("source_data1.xml", id, manager, "init");
+            String incrBefore = FindInSourceFor("source_data1.xml", id, manager, "incr");
 
-            String conditionAfter = findInSourceFor("source_data2.xml", id, manager, "condition");
-            String initAfter = findInSourceFor("source_data2.xml", id, manager, "init");
-            String incrAfter = findInSourceFor("source_data2.xml", id, manager, "incr");
+            String conditionAfter = FindInSourceFor("source_data2.xml", id, manager, "condition");
+            String initAfter = FindInSourceFor("source_data2.xml", id, manager, "init");
+            String incrAfter = FindInSourceFor("source_data2.xml", id, manager, "incr");
 
             // Treba osetrit ze sa nenamapovali na seba rovnake typy cyklov
             if(conditionBefore == null)
             {
-                conditionBefore = findInSource("source_data1.xml", id, manager, "while");
+                conditionBefore = FindInSource("source_data1.xml", id, manager, "while");
                 if (conditionBefore == null)
-                    conditionBefore = findInSource("source_data1.xml", id, manager, "do");
+                    conditionBefore = FindInSource("source_data1.xml", id, manager, "do");
                 else
                     conditionBefore = "conversion while -> for" + conditionBefore;
                 if (conditionBefore == null)
@@ -284,7 +284,7 @@ namespace ConsoleApplication12
 
         // Vracia obsah jednotlivych elementov kontrolnej casti for cyklu ako string 
         // podla nazvu elementName a idecka for cyklu
-        private String findInSourceFor(String fileName, String id, XmlNamespaceManager manager,String elementName)
+        private String FindInSourceFor(String fileName, String id, XmlNamespaceManager manager,String elementName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -303,7 +303,7 @@ namespace ConsoleApplication12
         }
 
         // Hlada a zapisuje zmeny v riadiacej casti cyklov for, do , while
-        public void findLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindLoopChange(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Identifikacia zmien v riadiacej casti while a do while cyklov
             XPathNodeIterator nodes = navigator.Select("//base:while[(@diff:status='below' or @diff:status='modified') and base:condition[@diff:status]]"
@@ -314,7 +314,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionLoopChange(manager, nodesNavigator);
+                WriteActionLoopChange(manager, nodesNavigator);
             }
 
             // Identifikacia zmien v riadiacej casti for cyklu
@@ -327,7 +327,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionLoopChangeFor(manager, nodesNavigator);
+                WriteActionLoopChangeFor(manager, nodesNavigator);
             }
         }
     }

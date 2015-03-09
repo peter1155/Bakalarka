@@ -16,7 +16,7 @@ namespace ConsoleApplication12
     class InputChangeActivity
     {
         
-        private String findInSource(String id, String fileName)
+        private String FindInSource(String id, String fileName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -50,7 +50,7 @@ namespace ConsoleApplication12
             return temp;
         }
 
-        private List<String> manualParse(XPathNavigator navigator)
+        private List<String> ManualParse(XPathNavigator navigator)
         {
             String parameters_before = null;
             String parameters_after = null;
@@ -158,7 +158,7 @@ namespace ConsoleApplication12
             return list;
         }
         
-        private String removeWhitespace(String str)
+        private String RemoveWhitespace(String str)
         {
             str = str.Replace(" ", "");
             str = str.Replace("\t", "");
@@ -166,7 +166,7 @@ namespace ConsoleApplication12
             return str;
         }
 
-        public void writeActionScan(XPathNavigator navigator)
+        public void WriteActionScan(XPathNavigator navigator)
         {
             // Zistujem v ktorej funkcii je to vnorene
             
@@ -192,15 +192,15 @@ namespace ConsoleApplication12
             // Ziskam id funkcie scanf
             String id = tempNavigator2.GetAttribute("id", "");
             String temp_id = tempNavigator2.GetAttribute("temp_id", "");
-            String parametersBefore = findInSource(id,"source_data1.xml");
-            String parametersAfter = findInSource(id,"source_data2.xml");
+            String parametersBefore = FindInSource(id,"source_data1.xml");
+            String parametersAfter = FindInSource(id,"source_data2.xml");
             String literalBefore;
             String literalAfter;
             string[] beforeAfterValues = null;
 
             if (String.Compare(id, "") == 0)
             {
-                var list = manualParse(tempNavigator2.Clone());
+                var list = ManualParse(tempNavigator2.Clone());
                 //manualParse2(tempNavigator2.Clone(),temp_id,"source_data2.xml", "source_data1.xml");
                 
                 parametersBefore = list.ElementAt(0);
@@ -303,8 +303,8 @@ namespace ConsoleApplication12
             String tempParametersBefore = parametersBefore;
             String tempParametersAfter = parametersAfter;
 
-            tempParametersAfter = removeWhitespace(tempParametersAfter);
-            tempParametersBefore = removeWhitespace(tempParametersBefore);
+            tempParametersAfter = RemoveWhitespace(tempParametersAfter);
+            tempParametersBefore = RemoveWhitespace(tempParametersBefore);
 
             if (literalBefore == literalAfter && tempParametersBefore == tempParametersAfter)
                 return;
@@ -328,7 +328,7 @@ namespace ConsoleApplication12
         }
 
         // Urobim dopyt nad difference XML dokumentom a vyhladam volania funkcie scanf, kde nastala nejaka zmena
-        public void findDifferenceInInput(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindDifferenceInInput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodes = navigator.Select("//base:call[not(base:name[@diff:status]) and base:name='scanf' and  @diff:status='below']/base:argument_list[" +
             "base:argument/base:expr[lit:literal/@diff:status or base:name/@diff:status or base:call/@diff:status]]"
@@ -337,7 +337,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
-                writeActionScan(currentNode);
+                WriteActionScan(currentNode);
             }
         }
     }

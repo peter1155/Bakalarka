@@ -14,7 +14,7 @@ namespace ConsoleApplication12
     class OutputCanceledActivity
     {
         // Ziskava element s nazvom funkcie v ktorej sa identifikovana aktivita vyskytla
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
@@ -71,7 +71,7 @@ namespace ConsoleApplication12
         }
 
         // Ziskava poziciu (riadok,stlpec)
-        public List<String> findPosition(XPathNavigator navigator)
+        public List<String> FindPosition(XPathNavigator navigator)
         {
 
             // Pohne sa smerom k vnorenemu name, ktore ma dane atributy
@@ -86,15 +86,15 @@ namespace ConsoleApplication12
         }
 
         // Zapisuje aktivitu zakomentovanie volania printf do vystupneho xml
-        public void writeActionCanceledOutputPrintf(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionCanceledOutputPrintf(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
-            List<String> list = findPosition(navigator.Clone());
+            List<String> list = FindPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());           
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());           
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -113,15 +113,15 @@ namespace ConsoleApplication12
         }
 
         // Zapisuje aktivitu zakomentovanie volania putchar do vystupneho xml
-        public void writeActionCanceledOutputPutchar(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionCanceledOutputPutchar(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem poziciu if
-            List<String> list = findPosition(navigator.Clone());
+            List<String> list = FindPosition(navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -140,7 +140,7 @@ namespace ConsoleApplication12
         }
 
         // Spracovanie zakomentovaneho volania funkcie printf
-        private String processCommentNodePrintf(XPathNavigator navigator)
+        private String ProcessCommentNodePrintf(XPathNavigator navigator)
         {
             String comment = navigator.Value;
             
@@ -157,7 +157,7 @@ namespace ConsoleApplication12
         }
 
         // Spracovanie zakomentovaneho volania putchar
-        private String processCommentNodePutchar(XPathNavigator navigator)
+        private String ProcessCommentNodePutchar(XPathNavigator navigator)
         {
             String comment = navigator.Value;
 
@@ -180,7 +180,7 @@ namespace ConsoleApplication12
         }
 
         // Longest common subsequence
-        private int LCS(string s1, string s2)
+        private int Lcs(string s1, string s2)
         {
             if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
             {
@@ -209,7 +209,7 @@ namespace ConsoleApplication12
         }
 
         // Hlada aktivitu zakomentovanie pomocnych vystupov a zapisuje do vystupneho xml
-        public void findCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodesComment = navigator.Select("//base:comment[@diff:status='added']", manager);
             XPathNodeIterator nodesPrintf = navigator.Select("//base:call[base:name='printf' and  @diff:status='removed']", manager);
@@ -222,10 +222,10 @@ namespace ConsoleApplication12
             {
                 XPathNavigator nodesNavigator = nodesComment.Current;
 
-                String temp = processCommentNodePrintf(nodesNavigator);
+                String temp = ProcessCommentNodePrintf(nodesNavigator);
                 if (temp != null)
                     commentedPrintf.Add(temp);
-                temp = processCommentNodePutchar(nodesNavigator);
+                temp = ProcessCommentNodePutchar(nodesNavigator);
                 if (temp != null)
                     commentedPutchar.Add(temp);
             }
@@ -248,7 +248,7 @@ namespace ConsoleApplication12
                         writeActionCanceledOutputPrintf(manager, nodesNavigator);
                     }*/
                     if(commentedPrintf.ElementAt(i)==printfContent)
-                         writeActionCanceledOutputPrintf(manager, nodesNavigator);
+                         WriteActionCanceledOutputPrintf(manager, nodesNavigator);
                 } 
             }
 
@@ -269,7 +269,7 @@ namespace ConsoleApplication12
                         writeActionCanceledOutputPutchar(manager, nodesNavigator);
                     }*/
                     if (commentedPutchar.ElementAt(i) == putcharContent)
-                        writeActionCanceledOutputPutchar(manager, nodesNavigator);
+                        WriteActionCanceledOutputPutchar(manager, nodesNavigator);
                 }
             }
         }

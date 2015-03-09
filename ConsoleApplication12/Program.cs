@@ -14,9 +14,8 @@ namespace ConsoleApplication12
 {
     class Program
     {
-        
         // Vytvori xml subor na zapis zaznamenanych cinnosti
-        public static void createXMLDoc()
+        public static void CreateXMLDoc()
         {
             XmlDocument doc = new XmlDocument();
 
@@ -30,7 +29,7 @@ namespace ConsoleApplication12
         }
 
         // Sluzi na vymazanie XML elementu, tak aby ostali zachovany jeho potomkovia
-        private static void removeBlocks(XmlNode parent, XmlNode childToRemove)
+        private static void RemoveBlocks(XmlNode parent, XmlNode childToRemove)
         {
             while (childToRemove.HasChildNodes)
                 parent.InsertBefore(childToRemove.ChildNodes[0], childToRemove);
@@ -39,84 +38,32 @@ namespace ConsoleApplication12
         }
 
         // Rekurzivne prechadza cele XML a vymazava block elementy
-        private static void recursiveXmlPreProcessing(XmlNodeList list1, XmlDocument doc)
+        private static void RecursiveXmlPreProcessing(XmlNodeList list1, XmlDocument doc)
         {
             foreach (XmlNode listNode in list1)
             {
-                /*if(listNode.Name == "do" || listNode.Name == "while" || listNode.Name == "for")
-                {
-                    XmlAttribute nameAtrib = doc.CreateAttribute("cycle_type");
-                    nameAtrib.Value = listNode.Name;
-
-                    XmlNode parentNode = listNode.ParentNode;
-                    XmlNode tempNode = doc.CreateElement("cycle", "http://www.sdml.info/srcML/src");
-                    tempNode.InnerXml = listNode.InnerXml;
-                    // Kopiruje atributy
-                    while(listNode.Attributes.Count > 0)
-                        tempNode.Attributes.Append(listNode.Attributes[0]);
-                    tempNode.Attributes.Append(nameAtrib);
-                    parentNode.InsertBefore(tempNode, listNode);
-                    parentNode.RemoveChild(listNode);
-                    recursiveXmlPreProcessing(parentNode.ChildNodes,doc);
-
-                }*/
                 if(listNode.Name == "block")
                 {
                     XmlNode parent = listNode.ParentNode;
-                    removeBlocks(parent, listNode);
+                    RemoveBlocks(parent, listNode);
                     if (parent.HasChildNodes)
-                        recursiveXmlPreProcessing(parent.ChildNodes,doc);
+                        RecursiveXmlPreProcessing(parent.ChildNodes,doc);
                 }
                 else if (listNode.HasChildNodes)
-                    recursiveXmlPreProcessing(listNode.ChildNodes,doc);
+                    RecursiveXmlPreProcessing(listNode.ChildNodes,doc);
             }
         }
 
         // Vymaze block elementy z xml suboru s nazvom fileName
         // zaroven zmeni elementy fro, do, while na cycle a typ cyklu sa ulozi do atributu
-        private static void xmlPreProcessing(String fileName)
+        private static void XmlPreProcessing(String fileName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
-            recursiveXmlPreProcessing(doc.ChildNodes,doc);
+            RecursiveXmlPreProcessing(doc.ChildNodes,doc);
             doc.Save(fileName);
         }
         
-        // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
-        /*private static void xmlPostIndexingProcessing(String fileName)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(fileName);
-            xmlRecursivePostIndexingProcessing(doc.ChildNodes, doc);
-            doc.Save(fileName);
-        }*/
-
-        // Zmeni nazov elementu cycle na prislusny nazov podla atributu cycle_type
-        /*private static void xmlRecursivePostIndexingProcessing(XmlNodeList list1, XmlDocument doc)
-        {
-            foreach (XmlNode listNode in list1)
-            {
-                if(listNode.Name == "cycle")
-                {
-                    XmlNode typeAtrib = listNode.Attributes.GetNamedItem("cycle_type","");
-
-                    XmlNode parentNode = listNode.ParentNode;
-                    String temp = typeAtrib.Value.Replace("~", "_");
-                    XmlNode tempNode = doc.CreateElement(temp, "http://www.sdml.info/srcML/src");
-                    tempNode.InnerXml = listNode.InnerXml;
-                    // Kopiruje atributy
-                    while(listNode.Attributes.Count > 0)
-                        tempNode.Attributes.Append(listNode.Attributes[0]);
-                    
-                    parentNode.InsertBefore(tempNode, listNode);
-                    parentNode.RemoveChild(listNode);
-                    xmlRecursivePostIndexingProcessing(parentNode.ChildNodes, doc);
-                }
-                else if (listNode.HasChildNodes)
-                    xmlRecursivePostIndexingProcessing(listNode.ChildNodes, doc);
-            }
-        }*/
-
         static void Main(string[] args)
         {
             // pocita spracovane kody
@@ -128,7 +75,7 @@ namespace ConsoleApplication12
             // Nacitanie konfiguracie aplikacie
             try
             {
-                Options.loadProgramConfiguration();
+                Options.LoadProgramConfiguration();
             }
             catch (Exception ex)
             {
@@ -197,8 +144,8 @@ namespace ConsoleApplication12
 
                     //////////////////////////////////////////// SrcToSrcML preklad ////////////////////////////////////////////////////
 
-                    xmlPreProcessing("source_data1.xml");
-                    xmlPreProcessing("source_data2.xml");
+                    XmlPreProcessing("source_data1.xml");
+                    XmlPreProcessing("source_data2.xml");
 
                     // Pre potreby xml-diffu vymaze z atributov line a column prefix pos v subore source_data1.xml
                     XDocument document = XDocument.Load("source_data1.xml");
@@ -221,7 +168,7 @@ namespace ConsoleApplication12
 
 
                     SimilarityBaseIndexing indexing = new SimilarityBaseIndexing();
-                    indexing.xmlIndexing("source_data1.xml", "source_data2.xml");
+                    indexing.XmlIndexing("source_data1.xml", "source_data2.xml");
 
                     ///////////////////////////////////////// Indexing elements end ///////////////////////////////
 
@@ -246,7 +193,7 @@ namespace ConsoleApplication12
                     else
                     {
                         XMLDiff myDiffer = new XMLDiff();
-                        myDiffer.diffXmlFiles("source_data1.xml", "source_data2.xml");
+                        myDiffer.DiffXmlFiles("source_data1.xml", "source_data2.xml");
                     }
 
                     ////////////////////////////////////////// XML Differencing /////////////////////////////////////
@@ -258,7 +205,7 @@ namespace ConsoleApplication12
                     doc.Load("difference.xml");
 
                     // Vytvorenie suboru na zapis identifikovanych zmien
-                    createXMLDoc();
+                    CreateXMLDoc();
 
                     // Spatne pridanie prefixov pre atributy line a column
                     string xmlcontents = doc.InnerXml;
@@ -285,51 +232,51 @@ namespace ConsoleApplication12
 
                     // Hlada zmeny v outpute
                     OutputChangeActivity outputActivity = new OutputChangeActivity();
-                    outputActivity.findDifferenceInOutput(manager, navigator);
+                    outputActivity.FindDifferenceInOutput(manager, navigator);
 
                     // Hlada zmeny v inpute
                     InputChangeActivity inputActivity = new InputChangeActivity();
-                    inputActivity.findDifferenceInInput(manager, navigator);
+                    inputActivity.FindDifferenceInInput(manager, navigator);
 
                     // Hlada pridane funkcie
                     AddFunctionActivity addFunctionActivity = new AddFunctionActivity();
-                    addFunctionActivity.findAddedFunctions(manager, navigator);
+                    addFunctionActivity.FindAddedFunctions(manager, navigator);
 
                     // Hlada zmenene volania funkcie
                     CallFunctionChangeActivity callFunctionChangedActivity = new CallFunctionChangeActivity();
-                    callFunctionChangedActivity.findChangedFunctionCalls(manager, navigator);
+                    callFunctionChangedActivity.FindChangedFunctionCalls(manager, navigator);
 
                     // Hlada pridanie okrajovych pripadov
                     SpecialCaseActivity specialCaseActivity = new SpecialCaseActivity();
-                    specialCaseActivity.findSpecialCaseAdd(manager, navigator);
+                    specialCaseActivity.FindSpecialCaseAdd(manager, navigator);
 
                     // Hladam zmenene podmienky
                     ConditionChangeActivity conditionChangeActivity = new ConditionChangeActivity();
-                    conditionChangeActivity.findConditionChange(manager, navigator);
+                    conditionChangeActivity.FindConditionChange(manager, navigator);
 
                     // Hlada zmenu na podmienkach cyklu
                     LoopChangeActivity loopChangeActivity = new LoopChangeActivity();
-                    loopChangeActivity.findLoopChange(manager, navigator);
+                    loopChangeActivity.FindLoopChange(manager, navigator);
 
                     // Hlada zrusene premenne
                     VariableDeclarationActivity variableDeclarationActivity = new VariableDeclarationActivity();
-                    variableDeclarationActivity.findVariableRemoved(manager, navigator);
+                    variableDeclarationActivity.FindVariableRemoved(manager, navigator);
 
                     // Hlada zmenu v indexovani poli
                     ArrayIndexingActivity arrayIndexingActivity = new ArrayIndexingActivity();
-                    arrayIndexingActivity.findArrayIndexingModification(manager, navigator);
+                    arrayIndexingActivity.FindArrayIndexingModification(manager, navigator);
 
                     // Hlada zrusene pomocne vypisy
                     OutputCanceledActivity outputCanceledActivity = new OutputCanceledActivity();
-                    outputCanceledActivity.findCanaceledOutput(manager, navigator);
+                    outputCanceledActivity.FindCanaceledOutput(manager, navigator);
 
                     // Hlada zakomentovane a odkomentovane casti kodu
                     CommentActivity commentActivity = new CommentActivity(fileName1, fileName2);
-                    commentActivity.findCanaceledOutput(manager, navigator);
+                    commentActivity.FindCanaceledOutput(manager, navigator);
 
                     // Hlada refctoring kodu
                     RefactorActivity refactorActivity = new RefactorActivity();
-                    refactorActivity.findRefactoring();
+                    refactorActivity.FindRefactoring();
 
                     // Pomocou postProcessingu hlada niektore presunute elementy
                     MoveDetection moveDetection = new MoveDetection();

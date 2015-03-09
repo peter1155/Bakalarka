@@ -16,7 +16,7 @@ namespace ConsoleApplication12
     class RefactorActivity
     {
         // Ziska element s pridanou funkciu
-        private XElement getFunctionAddedNode(XPathNavigator navigator)
+        private XElement GetFunctionAddedNode(XPathNavigator navigator)
         {
             XElement addFuncElement = new XElement("added_function");
 
@@ -32,7 +32,7 @@ namespace ConsoleApplication12
         }
 
         // Ziska element s pridanym volanim funkcie
-        private XElement getFunctionCallNode(XPathNavigator navigator)
+        private XElement GetFunctionCallNode(XPathNavigator navigator)
         {
             XElement callFuncElement = new XElement("call_function");
 
@@ -48,10 +48,10 @@ namespace ConsoleApplication12
         }
 
         // Zapise identifikovany refactoring do vystupneho xml suboru
-        public void writeRefactorActivity(XPathNavigator callNavigator, XPathNavigator navigator)
+        public void WriteRefactorActivity(XPathNavigator callNavigator, XPathNavigator navigator)
         {
-            XElement addFuncElement = getFunctionAddedNode(navigator);
-            XElement callFuncElement = getFunctionCallNode(callNavigator);
+            XElement addFuncElement = GetFunctionAddedNode(navigator);
+            XElement callFuncElement = GetFunctionCallNode(callNavigator);
             
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -65,7 +65,7 @@ namespace ConsoleApplication12
         }
 
         // Nacita subor so zaznamenanymi aktivitami vracia XPathNavigator pre dany subor
-        private XPathNavigator loadIdentifiedActivities()
+        private XPathNavigator LoadIdentifiedActivities()
         {
             XmlDocument doc = new XmlDocument();
             doc.Load("RecordedActions.xml");
@@ -80,9 +80,9 @@ namespace ConsoleApplication12
         }
 
         // Najde refactoring a zapise danu zmenu do vystupneho xml suboru
-        public void findRefactoring()
+        public void FindRefactoring()
         {
-            XPathNavigator navigator = loadIdentifiedActivities();
+            XPathNavigator navigator = LoadIdentifiedActivities();
 
             // Najde vsetky pridane funkcie
             XPathNodeIterator nodes = navigator.Select("//action[name='function_added']");
@@ -100,7 +100,7 @@ namespace ConsoleApplication12
                 // Ak sa tam vyskytuje volanie pridanej funkcie zapis aktivitu
                 if(funcCall != null)
                 {
-                    writeRefactorActivity(funcCall, nodesNavigator);
+                    WriteRefactorActivity(funcCall, nodesNavigator);
                 }
             }
 

@@ -10,29 +10,28 @@ namespace ConsoleApplication12
     class XMLDiff
     {
         // V hashMape su ulozene vsetky elementy 1. verzie kodu v XML
-        private  Dictionary<int, XmlNode> hashMap1;
+        private  Dictionary<int, XmlNode> _hashMap1;
 
         // V hashMape su ulozene vsetky elementy 2. verzie kodu v XML
-        private  Dictionary<int, XmlNode> hashMap2;
+        private  Dictionary<int, XmlNode> _hashMap2;
 
         // Pomocna hashMapa ukladam sem tie zmazane elementy z 1. verzie ktore boli prekopirovane
-        private  Dictionary<int, XmlNode> hashMap3;
+        private  Dictionary<int, XmlNode> _hashMap3;
 
         // Zaloha originalnej hash mapy 1
-        private  Dictionary<int, XmlNode> hashMap4;
+        private  Dictionary<int, XmlNode> _hashMap4;
 
         private  XmlNode root;
 
         public XMLDiff()
         {
-
-            hashMap1 = new Dictionary<int, XmlNode>();
-            hashMap2 = new Dictionary<int, XmlNode>();
-            hashMap3 = new Dictionary<int, XmlNode>();
-            hashMap4 = new Dictionary<int, XmlNode>();
+            _hashMap1 = new Dictionary<int, XmlNode>();
+            _hashMap2 = new Dictionary<int, XmlNode>();
+            _hashMap3 = new Dictionary<int, XmlNode>();
+            _hashMap4 = new Dictionary<int, XmlNode>();
         }
 
-        public  void diffXmlFiles(String fileName1, String fileName2)
+        public  void DiffXmlFiles(String fileName1, String fileName2)
         {
 
             XmlDocument doc1 = new XmlDocument();
@@ -43,14 +42,16 @@ namespace ConsoleApplication12
 
             root = doc1.ChildNodes.Item(0);
 
-            Hashing(doc1.ChildNodes, hashMap1);
+            // Zahesuje vsetky XML elementy pveho dokumentu
+            Hashing(doc1.ChildNodes, _hashMap1);
 
-            foreach (KeyValuePair<int, XmlNode> entry in hashMap1)
+            foreach (KeyValuePair<int, XmlNode> entry in _hashMap1)
             {
-                hashMap4.Add(entry.Key, (XmlNode)entry.Value.Clone());
+                _hashMap4.Add(entry.Key, (XmlNode)entry.Value.Clone());
             }
 
-            Hashing(doc2.ChildNodes, hashMap2);
+            // Zahesuje vsetky XML elementy druheho dokumentu
+            Hashing(doc2.ChildNodes, _hashMap2);
 
             MakeDiff(doc2.ChildNodes, doc2);
 
@@ -60,18 +61,20 @@ namespace ConsoleApplication12
 
         }
 
+        // Najde elementy ktore boli vymazane v druhej verzii
         private  void findRemovedItems(XmlDocument doc2)
         {
-            foreach (KeyValuePair<int, XmlNode> entry in hashMap1)
+            foreach (KeyValuePair<int, XmlNode> entry in _hashMap1)
             {
                 XmlNode tempNode = entry.Value;
                 XmlNode fromHashTable;
-                if (!hashMap3.TryGetValue(entry.Key, out fromHashTable))
-                    findParent(tempNode, doc2);
+                if (!_hashMap3.TryGetValue(entry.Key, out fromHashTable))
+                    FindParent(tempNode, doc2);
             }
         }
 
-        private  void setStatusDeleted(XmlNodeList list, XmlDocument doc1)
+        // Prechadza rodicovskymi elementmi a nastavuje status na deleted
+        private  void SetStatusDeleted(XmlNodeList list, XmlDocument doc1)
         {
             foreach (XmlNode listNode in list)
             {
@@ -80,25 +83,26 @@ namespace ConsoleApplication12
                     XmlNode outOfMapNode;
                     XmlNode idAtrib = listNode.Attributes.GetNamedItem("id");
 
-                    if (!hashMap2.TryGetValue(Convert.ToInt32(idAtrib.Value), out outOfMapNode))
+                    if (!_hashMap2.TryGetValue(Convert.ToInt32(idAtrib.Value), out outOfMapNode))
                     {
                         XmlAttribute statusAtrib = doc1.CreateAttribute("diff","status", "http://www.via.ecp.fr/~remi/soft/xml/xmldiff");
                         statusAtrib.Value = "removed";
                         listNode.Attributes.Append(statusAtrib);
                     }
                     if (listNode.HasChildNodes)
-                        setStatusDeleted(listNode.ChildNodes, doc1);
+                        SetStatusDeleted(listNode.ChildNodes, doc1);
                 }
             }
         }
 
-        private  void findParent(XmlNode node, XmlDocument doc2)
+        // Hladada najblizsieho nezmazaneho rodica
+        private  void FindParent(XmlNode node, XmlDocument doc2)
         {
             XmlNode tempNode;
             XmlNode child = null;
 
             var idAtrib = node.Attributes.GetNamedItem("id");
-            while (!hashMap2.TryGetValue(Convert.ToInt32(idAtrib.Value), out tempNode))
+            while (!_hashMap2.TryGetValue(Convert.ToInt32(idAtrib.Value), out tempNode))
             {
                 child = node;
                 node = node.ParentNode;
@@ -114,12 +118,12 @@ namespace ConsoleApplication12
                 if (childNode == child)
                 {
                     XmlNode importNode = tempNode.OwnerDocument.ImportNode(childNode, true);
-                    setStatusDeleted(importNode.ChildNodes, doc2);
-                    setParentDiffStatus(doc2, importNode, root);
+                    SetStatusDeleted(importNode.ChildNodes, doc2);
+                    SetParentDiffStatus(doc2, importNode, root);
 
                     // Delete added node and his children from HashMap
-                    hashMap3.Add(Convert.ToInt32(importNode.Attributes.GetNamedItem("id").Value), importNode);
-                    Hashing(importNode.ChildNodes, hashMap3);
+                    _hashMap3.Add(Convert.ToInt32(importNode.Attributes.GetNamedItem("id").Value), importNode);
+                    Hashing(importNode.ChildNodes, _hashMap3);
 
                     if (XmlNodeType.Element == childNode.NodeType)
                     {
@@ -147,6 +151,7 @@ namespace ConsoleApplication12
             }
         }*/
 
+        // Vytvori hash mapu s listu xml elementov
         private  void Hashing(XmlNodeList list1, Dictionary<int, XmlNode> hashMap)
         {
             foreach (XmlNode listNode in list1)
@@ -165,6 +170,7 @@ namespace ConsoleApplication12
 
         }
 
+        // Vytvara cast diff suboru kde su oznacene pridane a modifikovane elementy
         private  void MakeDiff(XmlNodeList list1, XmlDocument doc1)
         {
             foreach (XmlNode listNode in list1)
@@ -175,7 +181,7 @@ namespace ConsoleApplication12
                     if (idAtrib != null)
                     {
                         XmlNode tempNode;
-                        if (hashMap1.TryGetValue(Convert.ToInt32(idAtrib.Value), out tempNode))
+                        if (_hashMap1.TryGetValue(Convert.ToInt32(idAtrib.Value), out tempNode))
                         {
                             if (listNode.InnerText != tempNode.InnerText)
                             {
@@ -220,11 +226,11 @@ namespace ConsoleApplication12
                                     diffAtrib.Value = "below";
 
                                 listNode.Attributes.Append(diffAtrib);
-                                setParentDiffStatus(doc1, listNode, root);
+                                SetParentDiffStatus(doc1, listNode, root);
 
                             }
 
-                            hashMap1.Remove(Convert.ToInt32(idAtrib.Value));
+                            _hashMap1.Remove(Convert.ToInt32(idAtrib.Value));
                         }
                         else
                         {
@@ -234,7 +240,7 @@ namespace ConsoleApplication12
                             // Nastavim hodnotu atributu status a prechadzam postupne az na posledneho rodica ktory nema nastaveny status
 
                             listNode.Attributes.Append(diffAtrib);
-                            setParentDiffStatusAdded(doc1, listNode, root, hashMap1);
+                            SetParentDiffStatusAdded(doc1, listNode, root, _hashMap1);
                         }
 
                     }
@@ -249,7 +255,8 @@ namespace ConsoleApplication12
             }
         }
 
-        private  void setParentDiffStatus(XmlDocument doc1, XmlNode node, XmlNode root)
+        // Prechadza cez rodicov a nastavuje diff status
+        private  void SetParentDiffStatus(XmlDocument doc1, XmlNode node, XmlNode root)
         {
             node = node.ParentNode;
             while (node != null && node.ParentNode != root)
@@ -272,7 +279,8 @@ namespace ConsoleApplication12
             }
         }
 
-        private  void setParentDiffStatusAdded(XmlDocument doc1, XmlNode node, XmlNode root, Dictionary<int, XmlNode> hashMap)
+        // Prechadza cez rodicov a nastavuje diff status na added
+        private  void SetParentDiffStatusAdded(XmlDocument doc1, XmlNode node, XmlNode root, Dictionary<int, XmlNode> hashMap)
         {
             node = node.ParentNode;
             while (node != null && node.ParentNode != root)
@@ -284,7 +292,7 @@ namespace ConsoleApplication12
                     XmlNode idAtrib = node.Attributes.GetNamedItem("id");
                     String status = "below";
 
-                    if (!hashMap4.TryGetValue(Convert.ToInt32(idAtrib.Value), out outTableNode))
+                    if (!_hashMap4.TryGetValue(Convert.ToInt32(idAtrib.Value), out outTableNode))
                         status = "added";
 
                     if (diffAtrib == null)

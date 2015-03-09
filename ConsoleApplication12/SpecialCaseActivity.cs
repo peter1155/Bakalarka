@@ -16,7 +16,7 @@ namespace ConsoleApplication12
     {
         // Vracia typ specialnej aktivity v zavislosti od toho ktory z prikazov
         // break, continue, return bol pridany do kodu
-        public String specialCaseType(XmlNamespaceManager manager, XPathNavigator navigator)
+        public String SpecialCaseType(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodes = null; 
             nodes = navigator.Select("base:break",manager);
@@ -32,7 +32,7 @@ namespace ConsoleApplication12
         }
 
         // Ziskava nazov funkcie v ktorej je vnorena dana aktivita
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (String.Compare(navigator.Name, "unit") != 0 && String.Compare(navigator.Name, "function") != 0)
@@ -86,7 +86,7 @@ namespace ConsoleApplication12
         }
 
         // Vracia element mena konstanty voci ktorej prebehlo porovnanie
-        private XElement getConstantNameElement(XPathNavigator navigator)
+        private XElement GetConstantNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (navigator != null && String.Compare(navigator.Name, "expr") != 0)
@@ -137,7 +137,7 @@ namespace ConsoleApplication12
         }
         
         // Hlada poziciu elementu s nazvom elementName
-        public List<String> findPosition(String elementName,XPathNavigator navigator)
+        public List<String> FindPosition(String elementName,XPathNavigator navigator)
         {
             while (navigator != null && String.Compare(navigator.Name, elementName) != 0)
             {
@@ -154,18 +154,18 @@ namespace ConsoleApplication12
 
         // Zapis identifikovanej aktivity pridanie jedneho z prikazov break, return, continue
         // do tela then vetvy
-        public void writeActionSpecialCaseThen(XmlNamespaceManager manager,XPathNavigator navigator)
+        public void WriteActionSpecialCaseThen(XmlNamespaceManager manager,XPathNavigator navigator)
         {
             // Zistujem o ktory specialny pripad sa jedna
-            String type = specialCaseType(manager, navigator.Clone());
+            String type = SpecialCaseType(manager, navigator.Clone());
            
             // Zistujem poziciu if
-            List<String> list = findPosition("if", navigator.Clone());
+            List<String> list = FindPosition("if", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
             
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -184,18 +184,18 @@ namespace ConsoleApplication12
 
         // Zapis identifikovanej aktivity pridanie jedneho z prikazov break, return, continue
         // do tela else vetvy
-        public void writeActionSpecialCaseElse(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void WriteActionSpecialCaseElse(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Zistujem o ktory specialny pripad sa jedna
-            String type = specialCaseType(manager, navigator.Clone());
+            String type = SpecialCaseType(manager, navigator.Clone());
 
             // Zistujem poziciu if
-            List<String> list = findPosition("else", navigator.Clone());
+            List<String> list = FindPosition("else", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -213,20 +213,20 @@ namespace ConsoleApplication12
         }
 
         // Zapis identifikovanej aktivity porovnanie voci konstante
-        public void writeActionSpecialCaseConst(XmlNamespaceManager manager, XPathNavigator navigator, List<String> listConstant)
+        public void WriteActionSpecialCaseConst(XmlNamespaceManager manager, XPathNavigator navigator, List<String> listConstant)
         {
             // Zistujem o ktory specialny pripad sa jedna
-            XElement Xname = getConstantNameElement(navigator.Clone());
+            XElement Xname = GetConstantNameElement(navigator.Clone());
             String name = navigator.Value;
             int index = listConstant.IndexOf(name);
             String value = listConstant.ElementAt(index + 1);
             // Zistujem poziciu if
-            List<String> list = findPosition("if", navigator.Clone());
+            List<String> list = FindPosition("if", navigator.Clone());
             String line = list.ElementAt(0);
             String column = list.ElementAt(1);
 
             // Zistujem v ktorej funkcii je to vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zapisem akciu do xml suboru
             XDocument xdoc = XDocument.Load("RecordedActions.xml");
@@ -247,7 +247,7 @@ namespace ConsoleApplication12
         }
 
         // Najdenie hodnoty zadefinovanej konstanty
-        private String findInSource(String fileName, String name)
+        private String FindInSource(String fileName, String name)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -274,7 +274,7 @@ namespace ConsoleApplication12
         }
        
         // Vracia list vsetkych zadefinovanych konstant v programe
-        private List<String> findDefinedConstants(XmlNamespaceManager manager, XPathNavigator navigator)
+        private List<String> FindDefinedConstants(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             XPathNodeIterator nodes = navigator.Select("//cpp:macro[not(base:parameter_list)]/base:name", manager);
             List<String> list = new List<string>();
@@ -287,13 +287,13 @@ namespace ConsoleApplication12
                 {
                     char[] delimiters = {'~'};
                     string[] beforeAfterValues = constantName.Split(delimiters);
-                    constantValue = findInSource("source_data1.xml", beforeAfterValues[0]);
+                    constantValue = FindInSource("source_data1.xml", beforeAfterValues[0]);
                     if (constantValue == null)
-                        constantValue = findInSource("source_data2.xml", beforeAfterValues[0]);
+                        constantValue = FindInSource("source_data2.xml", beforeAfterValues[0]);
                     if (constantValue == null)
-                        constantValue = findInSource("source_data1.xml", beforeAfterValues[1]);
+                        constantValue = FindInSource("source_data1.xml", beforeAfterValues[1]);
                     if (constantValue == null)
-                        constantValue = findInSource("source_data2.xml", beforeAfterValues[1]);
+                        constantValue = FindInSource("source_data2.xml", beforeAfterValues[1]);
                     list.Add(constantName);
                     list.Add(constantValue);
                     list.Add(beforeAfterValues[0]);
@@ -303,9 +303,9 @@ namespace ConsoleApplication12
                 }
                 else
                 {
-                    constantValue = findInSource("source_data1.xml", nodesNavigator.Value);
+                    constantValue = FindInSource("source_data1.xml", nodesNavigator.Value);
                     if (constantValue == null)
-                        constantValue = findInSource("source_data2.xml", nodesNavigator.Value);
+                        constantValue = FindInSource("source_data2.xml", nodesNavigator.Value);
                     list.Add(constantName);
                     list.Add(constantValue);
                 }
@@ -317,7 +317,7 @@ namespace ConsoleApplication12
 
         // Identifikuje aktivity pridanie specialneho pripadu (pridanie continue,break,return do tela if/else
         // alebo pridanie porovnania voci zadefinovanej konstante v podmienke if/else) a zapise do vystupneho xml
-        public void findSpecialCaseAdd(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindSpecialCaseAdd(XmlNamespaceManager manager, XPathNavigator navigator)
         { 
             // Najdenie pridania jedneho zo specialnych prikazov do then vetvy
             XPathNodeIterator nodes = navigator.Select("//base:if[@diff:status]/base:then/base:block[base:return[@diff:status='added']" +
@@ -327,7 +327,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionSpecialCaseThen(manager,nodesNavigator);
+                WriteActionSpecialCaseThen(manager,nodesNavigator);
             }
 
             // Najdenie pridania jedneho zo specialnych prikazov do else vetvy
@@ -338,10 +338,10 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator nodesNavigator = nodes.Current;
-                writeActionSpecialCaseElse(manager, nodesNavigator);
+                WriteActionSpecialCaseElse(manager, nodesNavigator);
             }
 
-            List<String> definedConstants = findDefinedConstants(manager, navigator);
+            List<String> definedConstants = FindDefinedConstants(manager, navigator);
             if (definedConstants.Count > 0)
             {
                 String xpathQuery = "//base:if[@diff:status]/base:condition/base:expr[base:name='" + definedConstants.ElementAt(0) + "' ";
@@ -354,7 +354,7 @@ namespace ConsoleApplication12
                 while(nodes.MoveNext())
                 {
                     XPathNavigator nodesNavigator = nodes.Current;
-                    writeActionSpecialCaseConst(manager, nodesNavigator,definedConstants);
+                    WriteActionSpecialCaseConst(manager, nodesNavigator,definedConstants);
                 }
             }
             

@@ -16,7 +16,7 @@ namespace ConsoleApplication12
     {
         // Najde funkciu v ktorej sa nachadza zmena vo volani funkcie printf
         // vytvori prislusny element 
-        private XElement getFunctionNameElement(XPathNavigator navigator)
+        private XElement GetFunctionNameElement(XPathNavigator navigator)
         {
             // Najde element function
             while (navigator != null && String.Compare(navigator.Name, "function") != 0)
@@ -68,7 +68,7 @@ namespace ConsoleApplication12
 
         // Vracia zoznam argumentov volania funkcie printf s id = id 
         // v zdrojovom subore s nazvom fileName
-        private String findInSource(String id, String fileName)
+        private String FindInSource(String id, String fileName)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -105,7 +105,7 @@ namespace ConsoleApplication12
             return temp;
         }
 
-        private String removeWhitespace(String str)
+        private String RemoveWhitespace(String str)
         {
             str = str.Replace(" ", "");
             str = str.Replace("\t", "");
@@ -114,10 +114,10 @@ namespace ConsoleApplication12
         }
 
         // Zapis identifikovanu zmenu funkcie printf do vystupneho xml suboru
-        public void writeActionPrint(XPathNavigator navigator)
+        public void WriteActionPrint(XPathNavigator navigator)
         {
             // Ziskaj nazov funkcie v ktorej to je vnorene
-            XElement functionElement = getFunctionNameElement(navigator.Clone());
+            XElement functionElement = GetFunctionNameElement(navigator.Clone());
 
             // Zistujem poziciu funkcie printf
             XPathNavigator tempNavigator2 = navigator.Clone();
@@ -130,8 +130,8 @@ namespace ConsoleApplication12
             String id = tempNavigator2.GetAttribute("id", "");
             
             // Ziska zoznam argumentov funkcie printf
-            String parametersBefore = findInSource(id, "source_data1.xml");
-            String parametersAfter = findInSource(id, "source_data2.xml");
+            String parametersBefore = FindInSource(id, "source_data1.xml");
+            String parametersAfter = FindInSource(id, "source_data2.xml");
             String literalBefore;
             String literalAfter;
 
@@ -185,8 +185,8 @@ namespace ConsoleApplication12
             String tempParametersBefore = parametersBefore;
             String tempParametersAfter = parametersAfter;
 
-            tempParametersAfter = removeWhitespace(tempParametersAfter);
-            tempParametersBefore = removeWhitespace(tempParametersBefore);
+            tempParametersAfter = RemoveWhitespace(tempParametersAfter);
+            tempParametersBefore = RemoveWhitespace(tempParametersBefore);
 
             if (literalBefore == literalAfter && tempParametersBefore == tempParametersAfter)
                 return;
@@ -210,7 +210,7 @@ namespace ConsoleApplication12
         }
 
         // Urobim dopyt nad difference XML dokumentom a vyhladam volania funkcie printf, kde nastala nejaka zmena
-        public void findDifferenceInOutput(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindDifferenceInOutput(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Najdi volania funkcie printf kde funkcia printf nebola pridana ani zmazana ale 
             // zoznam jej parametrov sa zmenil
@@ -221,7 +221,7 @@ namespace ConsoleApplication12
             while (nodes.MoveNext())
             {
                 XPathNavigator currentNode = nodes.Current.Clone();
-                writeActionPrint(currentNode);
+                WriteActionPrint(currentNode);
             }
         }
     }
