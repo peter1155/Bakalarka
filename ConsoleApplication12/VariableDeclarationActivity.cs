@@ -110,11 +110,11 @@ namespace ConsoleApplication12
                 String temp = functionNameAfter.ToString();
                 temp = temp.Replace("<after>", "");
                 temp = temp.Replace("</after>", "");
-                nodes = navigator.Select("//base:function[base:name='" + temp + "']//base:decl_stmt/base:decl[base:name='" + varName + "']", manager);
+                nodes = navigator.Select("//base:function[base:name='" + temp + "']//base:decl_stmt/base:decl[base:name='" + varName + " and not(@diff:status)']", manager);
             }
             else
             {
-                nodes = navigator.Select("//base:decl_stmt/base:decl[base:name='" + varName + "' and not(ancestor::base:function)]", manager);
+                nodes = navigator.Select("//base:decl_stmt/base:decl[base:name='" + varName + "' and not(ancestor::base:function) and not(@diff:status)]", manager);
             }
             
             if (nodes.Count > 0)
@@ -272,8 +272,10 @@ namespace ConsoleApplication12
         public void findVariableRemoved(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Identifikacia vymazania premennej 
-            XPathNodeIterator nodes = navigator.Select("//base:decl_stmt[@diff:status]"
-                + "/base:decl[@diff:status='removed' and not(ancestor::base:typedef) and not(ancestor::base:union) and not(ancestor::base:struct)]/base:name", manager);
+            XPathNodeIterator nodes = navigator.Select("//base:function[not(@diff:status='removed')]//base:decl_stmt[@diff:status]"
+                + "/base:decl[@diff:status='removed' and not(ancestor::base:typedef) and not(ancestor::base:union) and not(ancestor::base:struct)]/base:name[@diff:status='removed']" +
+                " | //base:decl_stmt[@diff:status]"
+                + "/base:decl[@diff:status='removed' and not(ancestor::base:function) and not(ancestor::base:typedef) and not(ancestor::base:union) and not(ancestor::base:struct)]/base:name[@diff:status='removed']", manager);
             
             while (nodes.MoveNext())
             {
@@ -292,7 +294,8 @@ namespace ConsoleApplication12
             }
 
             // Identifikacia vymazania zadefinovanej konstanty
-            nodes = navigator.Select("//cpp:macro[@diff:status='removed' and not(base:parameter_list)]/base:name", manager);
+            nodes = navigator.Select("//base:function[not(@diff:status='removed')]//cpp:macro[@diff:status='removed' and not(base:parameter_list)]/base:name[@diff:status='removed']" +
+                " | //cpp:macro[@diff:status='removed' and not(base:parameter_list)]/base:name[@diff:status='removed']", manager);
             
             while (nodes.MoveNext())
             {

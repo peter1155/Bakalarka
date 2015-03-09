@@ -78,7 +78,7 @@ namespace ConsoleApplication12
             int i1 = 0, i2 = 0;
             float sum = 0;
             int count;
-            
+
             if (matrix.GetLength(0) > matrix.GetLength(1))
                 count = matrix.GetLength(1);
             else
@@ -126,7 +126,7 @@ namespace ConsoleApplication12
 
             // Zabezpeci aby sa volania kniznicnych funkcii printf, scanf, putchar mapovali vzdy iba na seba
             if (root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element
-                && root1.Name == "call" && root2.Name == "call" 
+                && root1.Name == "call" && root2.Name == "call"
                 && ((root1.ChildNodes[0].InnerText == "printf" && root2.ChildNodes[0].InnerText != "printf")
                 || (root1.ChildNodes[0].InnerText == "scanf" && root2.ChildNodes[0].InnerText != "scanf")
                 || (root1.ChildNodes[0].InnerText == "putchar" && root2.ChildNodes[0].InnerText != "putchar")
@@ -175,7 +175,7 @@ namespace ConsoleApplication12
             // Ak je podobnost vecsia ako nastavena prahova hodnota a jedna sa o Element  potom nastav podobnost  a idecka
             // zaroven musi platit ze podobnost je vecsia ako uz pred tym nastavena ak bola nastavena
             if (similarity > 0.7 && root1.NodeType == XmlNodeType.Element && root2.NodeType == XmlNodeType.Element
-                && root1.ParentNode.Name == root2.ParentNode.Name) 
+                && root1.ParentNode.Name == root2.ParentNode.Name)
             {
                 float similar1 = -1;
                 float similar2 = -1;
@@ -346,7 +346,7 @@ namespace ConsoleApplication12
 
                                 // Ak uz v danom riadku/stlpci je priradeny index prejdi na computeSimilarity
                                 // pretoze sa opat nemoze hashovat
-                                break; 
+                                break;
 
                             // Nastavim ostatne pozicie matice (v riadku a stlpci) na -1 aby som ich nemusel znova prechadzat
 
@@ -565,7 +565,7 @@ namespace ConsoleApplication12
                 if (listNode.NodeType == XmlNodeType.Element)
                 {
                     var idAtrib = listNode.Attributes.GetNamedItem("id");
-                    
+
                     // Ak dany element nema id prirad mu ho
                     if (idAtrib == null)
                     {
@@ -596,8 +596,8 @@ namespace ConsoleApplication12
             XmlNamespaceManager nsmanager2 = new XmlNamespaceManager(reader.NameTable);
             nsmanager2.AddNamespace("base", "http://www.sdml.info/srcML/src");
 
-            XmlNodeList functionsList2 =  doc2.SelectNodes("//base:function",nsmanager2);
-            foreach(XmlNode list1Node in functionsList1)
+            XmlNodeList functionsList2 = doc2.SelectNodes("//base:function", nsmanager2);
+            foreach (XmlNode list1Node in functionsList1)
                 foreach (XmlNode list2Node in functionsList2)
                 {
                     XmlNode id1 = list1Node.Attributes.GetNamedItem("id", "");
@@ -609,6 +609,7 @@ namespace ConsoleApplication12
                         getNotIndexedNodes(list1Node.ChildNodes, list1);
                         getNotIndexedNodes(list2Node.ChildNodes, list2);
                         AllToAllSimilarity(doc1, doc2, list1, list2);
+                       
                     }
                 }
         }
@@ -629,7 +630,7 @@ namespace ConsoleApplication12
 
                     // Pokracuj rekurzivne na deti elementu pokial nejake ma
                     if (listNode.HasChildNodes)
-                        getNotIndexedNodes(listNode.ChildNodes,list2);
+                        getNotIndexedNodes(listNode.ChildNodes, list2);
                 }
         }
 
@@ -759,7 +760,6 @@ namespace ConsoleApplication12
                 }
         }
 
-
         // Priradi indexy podobnym elementom medzi dvoma verziami xml suborov
         public void xmlIndexing(String fileName1, String fileName2)
         {
@@ -782,10 +782,10 @@ namespace ConsoleApplication12
 
             node1.Attributes.Append(attr);
             node2.Attributes.Append(attr2);
-            
+
             // Zvysi hodnotu pre id counter
             id++;
-            
+
             // Rekurzivne priradzuje id podobnym elementom
             recursiveSimilarity(doc1, doc2, doc1.ChildNodes, doc2.ChildNodes);
 
@@ -797,7 +797,7 @@ namespace ConsoleApplication12
                 //computeSimilarityForNotIndexed(doc1, doc2);
                 AllNotIndexedSimilarity(doc1, doc2);
             }
-            
+
             // Najde rovnake elementy ktorym neboli priradene idecka
             //postIndexing(doc1, doc2, node1.ChildNodes, node2.ChildNodes);
 
@@ -814,4 +814,4 @@ namespace ConsoleApplication12
 
         }
     }
-} 
+}

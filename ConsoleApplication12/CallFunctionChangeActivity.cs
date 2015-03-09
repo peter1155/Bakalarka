@@ -345,10 +345,10 @@ namespace ConsoleApplication12
                 return;
 
             // Nastavi modification type podla parametrov
-            String modification_type = "";
+            //String modification_type = "";
 
-            if (String.Compare(parametersBefore, parametersAfter) != 0)
-                modification_type = "parameter";
+            //if (String.Compare(parametersBefore, parametersAfter) != 0)
+            //   modification_type = "parameter";
             
             XElement function_parameters = new XElement("function_parameters");
             function_parameters.Add(new XElement("parameters_before", parametersBefore),
@@ -362,7 +362,7 @@ namespace ConsoleApplication12
             XElement my_element = new XElement("action",
                     new XElement("name", "function_call"),
                     new XElement("diff_type", "modified"),
-                    new XElement("modification_type",modification_type),
+                    //new XElement("modification_type",modification_type),
                     functionElement,
                     new XElement("function_call",
                     functionCallElement,function_parameters),

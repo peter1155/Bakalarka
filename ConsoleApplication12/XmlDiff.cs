@@ -34,6 +34,7 @@ namespace ConsoleApplication12
 
         public  void diffXmlFiles(String fileName1, String fileName2)
         {
+
             XmlDocument doc1 = new XmlDocument();
             doc1.Load(fileName1);
 

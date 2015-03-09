@@ -447,7 +447,7 @@ namespace ConsoleApplication12
             // Vytvori novy XElement a zapise ho do vystupneho xml
             XElement my_element = new XElement("action",
                     new XElement("name", "array_indexing"),
-                    new XElement("type", "expresion"),
+                    new XElement("type", "expression"),
                     functionElement,
                     new XElement("variable",
                         new XElement("name",

@@ -126,8 +126,16 @@ namespace ConsoleApplication12
             DateTime allTaskStart = DateTime.Now;
 
             // Nacitanie konfiguracie aplikacie
-            Options.loadProgramConfiguration();
-            
+            try
+            {
+                Options.loadProgramConfiguration();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.ReadKey();
+                return;
+            }
             // Ziskava instanciu triedy Src2SrcMLRunner na preklad zdrojoveho kodu do xml
             ABB.SrcML.Src2SrcMLRunner my_runner = new ABB.SrcML.Src2SrcMLRunner();
 
@@ -343,6 +351,13 @@ namespace ConsoleApplication12
                 }
             }
             
+            if(taskCounter == 0)
+            {
+                Console.WriteLine("Pravdepodobne bola zadana nespravna cesta: "+Options.TaskPath);
+                Console.ReadKey();
+                return;
+            }
+
             // Time messurement
             if (Options.Time == Options.ShowTime.Show)
             {
