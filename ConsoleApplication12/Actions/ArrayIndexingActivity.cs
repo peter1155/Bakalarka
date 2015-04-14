@@ -10,7 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.Actions
 {
     class ArrayIndexingActivity
     {
@@ -87,7 +87,6 @@ namespace ConsoleApplication12
                     new XElement("after", funcNames.ElementAt(0)));
             }
             else
-
             // Ak neplati ani jedna z predch. podmienok nazov funkcie sa medzi verziami nezmenil
 
             {

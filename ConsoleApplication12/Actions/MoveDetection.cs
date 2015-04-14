@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleApplication12.AppOptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.Actions
 {
     class MoveDetection
     {

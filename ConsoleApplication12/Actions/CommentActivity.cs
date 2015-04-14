@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Text.RegularExpressions;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.Actions
 {
     class CommentActivity
     {
@@ -194,7 +194,7 @@ namespace ConsoleApplication12
         
 
         // Najde pridane a vymazane komentare 
-        public void FindCanaceledOutput(XmlNamespaceManager manager, XPathNavigator navigator)
+        public void FindCommentModification(XmlNamespaceManager manager, XPathNavigator navigator)
         {
             // Sluzi na ulozenie vsetkoho zmazaneho kodu 
             List<string> removedSourceList = new List<string>();

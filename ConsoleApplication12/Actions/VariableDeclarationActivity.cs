@@ -10,7 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.Actions
 {
     class VariableDeclarationActivity
     {

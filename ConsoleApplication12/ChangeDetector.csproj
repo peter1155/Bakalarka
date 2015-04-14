@@ -55,27 +55,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddFunctionActivity.cs" />
-    <Compile Include="ArrayIndexingActivity.cs" />
-    <Compile Include="CallFunctionChangeActivity.cs" />
-    <Compile Include="MoveDetection.cs" />
-    <Compile Include="CommentActivity.cs" />
-    <Compile Include="ConditionChangeActivity.cs" />
-    <Compile Include="InputChangeActivity.cs" />
-    <Compile Include="LoopChangeActivity.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="OutputCanceledActivity.cs" />
-    <Compile Include="OutputChangeActivity.cs" />
+    <Compile Include="Actions\AddFunctionActivity.cs" />
+    <Compile Include="Actions\ArrayIndexingActivity.cs" />
+    <Compile Include="Actions\CallFunctionChangeActivity.cs" />
+    <Compile Include="Actions\MoveDetection.cs" />
+    <Compile Include="Actions\CommentActivity.cs" />
+    <Compile Include="Actions\ConditionChangeActivity.cs" />
+    <Compile Include="Actions\InputChangeActivity.cs" />
+    <Compile Include="Actions\LoopChangeActivity.cs" />
+    <Compile Include="AppOptions\Options.cs" />
+    <Compile Include="Actions\OutputCanceledActivity.cs" />
+    <Compile Include="Actions\OutputChangeActivity.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RefactorActivity.cs" />
-    <Compile Include="SimilarityBasedIndexing.cs" />
-    <Compile Include="SpecialCaseActivity.cs" />
-    <Compile Include="VariableDeclarationActivity.cs" />
-    <Compile Include="XmlDiff.cs" />
+    <Compile Include="Actions\RefactorActivity.cs" />
+    <Compile Include="Indexing\SimilarityBasedIndexing.cs" />
+    <Compile Include="Actions\SpecialCaseActivity.cs" />
+    <Compile Include="Actions\VariableDeclarationActivity.cs" />
+    <Compile Include="Diff\XmlDiff.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

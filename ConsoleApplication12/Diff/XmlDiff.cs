@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.Diff
 {
     class XMLDiff
     {

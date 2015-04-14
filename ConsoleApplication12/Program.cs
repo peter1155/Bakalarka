@@ -1,4 +1,8 @@
-﻿using Microsoft.XmlDiffPatch;
+﻿using ConsoleApplication12.Actions;
+using ConsoleApplication12.AppOptions;
+using ConsoleApplication12.Diff;
+using ConsoleApplication12.Indexing;
+using Microsoft.XmlDiffPatch;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -272,7 +276,7 @@ namespace ConsoleApplication12
 
                     // Hlada zakomentovane a odkomentovane casti kodu
                     CommentActivity commentActivity = new CommentActivity(fileName1, fileName2);
-                    commentActivity.FindCanaceledOutput(manager, navigator);
+                    commentActivity.FindCommentModification(manager, navigator);
 
                     // Hlada refctoring kodu
                     RefactorActivity refactorActivity = new RefactorActivity();

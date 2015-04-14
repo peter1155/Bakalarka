@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.IO;
 
-namespace ConsoleApplication12
+namespace ConsoleApplication12.AppOptions
 {
   
     public class Options
